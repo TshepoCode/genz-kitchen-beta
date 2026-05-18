@@ -4,7 +4,6 @@ import NavBar from "../components/NavBar";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import FeatureStrip from "../components/FeatureStrip";
-import PointSystem from "../components/PointSystem";
 
 
 export default function AboutPage() {
@@ -80,8 +79,6 @@ return (
                 Join us and taste the vibe!
             </p>
         </section>
-
-        <PointSystem />
 
         <section className="max-w-6xl mx-auto px-6 pb-20">
             <div className="grid md:grid-cols-3 gap-6">
