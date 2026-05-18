@@ -5,19 +5,19 @@ import Image from "next/image";
 const items = [
   {
     name: "2 Cheezy Grilled Hotdogs.",
-    image: "/CheezygrilledhotdogspecialFriday.png",
+    image: "/CheezygrilledhotdogspecialFriday.webp",
   },
   {
     name: "Give Me Zungu Burger Meal",
-    image: "/GiveMeZunguburgerpromo.png",
+    image: "/GiveMeZunguburgerpromo.webp",
   },
   {
     name: "Kasi Flamed Tacos",
-    image: "/FlaminHotStreet-styleTacos.png",
+    image: "/FlaminHotStreet-styleTacos.webp",
   },
   {
     name: "Level Up Your Wrap Game",
-    image: "/Levelupyourwrapgame.png",
+    image: "/Levelupyourwrapgame.webp",
   },
 ];
 

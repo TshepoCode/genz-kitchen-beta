@@ -62,30 +62,30 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
   Burgers: [
     {
       name: "Give Me Zungu",
-      image: "/GiveMeZungusingle.png",
+      image: "/GiveMeZungusingle.webp",
       options: [
         {
           label: "Burger Only",
           price: "R59",
-          image: "/GiveMeZungusingle.png",
+          image: "/GiveMeZungusingle.webp",
         },
         {
           label: "Meal Deal",
           price: "R89",
-          image: "/GiveMeZunguWebsite.png",
+          image: "/GiveMeZunguWebsite.webp",
           customizations: [
             {
               title: "Choose your chips",
               type: "single",
-              choices: [{ name: "Plain Chips", image: "/smallFriesBg.png" }],
+              choices: [{ name: "Plain Chips", image: "/smallFriesBg.webp" }],
             },
             {
               title: "Choose your drink",
               type: "single",
               choices: [
-                { name: "Coke", image: "/coke.png" },
-                { name: "Sprite", image: "/Sprite.png" },
-                { name: "Fanta Orange", image: "/Fanta.png" },
+                { name: "Coke", image: "/coke.webp" },
+                { name: "Sprite", image: "/Sprite.webp" },
+                { name: "Fanta Orange", image: "/Fanta.webp" },
               ],
             },
           ],
@@ -94,30 +94,30 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
     },
     {
       name: "Matla Thata Burger",
-      image: "/Matla Thata.png",
+      image: "/Matla Thata.webp",
       options: [
         {
           label: "Burger Only",
           price: "R79",
-          image: "/Matla Thata.png",
+          image: "/Matla Thata.webp",
         },
         {
           label: "Meal Option",
           price: "R95",
-          image: "/MatlaThataMeal2.png",
+          image: "/MatlaThataMeal2.webp",
           customizations: [
             {
               title: "Choose your chips",
               type: "single",
-              choices: [{ name: "Plain Chips", image: "/smallFriesBg.png" }],
+              choices: [{ name: "Plain Chips", image: "/smallFriesBg.webp" }],
             },
             {
               title: "Choose your drink",
               type: "single",
               choices: [
-                { name: "Coke", image: "/coke.png" },
-                { name: "Sprite", image: "/Sprite.png" },
-                { name: "Fanta Orange", image: "/Fanta.png" },
+                { name: "Coke", image: "/coke.webp" },
+                { name: "Sprite", image: "/Sprite.webp" },
+                { name: "Fanta Orange", image: "/Fanta.webp" },
               ],
             },
           ],
@@ -126,30 +126,30 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
     },
     {
       name: "Single Mingle Burger",
-      image: "/singleMingleWeb.png",
+      image: "/singleMingleWeb.webp",
       options: [
         {
           label: "Burger Only",
           price: "R35",
-          image: "/singleMingleWeb.png",
+          image: "/singleMingleWeb.webp",
         },
         {
           label: "Meal",
           price: "R75",
-          image: "/singleMingleMeal.png",
+          image: "/singleMingleMeal.webp",
           customizations: [
             {
               title: "Choose your chips",
               type: "single",
-              choices: [{ name: "Plain Chips", image: "/smallFriesBg.png" }],
+              choices: [{ name: "Plain Chips", image: "/smallFriesBg.webp" }],
             },
             {
               title: "Choose your drink",
               type: "single",
               choices: [
-                { name: "Coke", image: "/coke.png" },
-                { name: "Sprite", image: "/Sprite.png" },
-                { name: "Fanta Orange", image: "/Fanta.png" },
+                { name: "Coke", image: "/coke.webp" },
+                { name: "Sprite", image: "/Sprite.webp" },
+                { name: "Fanta Orange", image: "/Fanta.webp" },
               ],
             },
           ],
@@ -160,12 +160,12 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
   Hotdogs: [
     {
       name: "Bacon Bite Hotdog",
-      image: "/baconbitehotdog.png",
+      image: "/baconbitehotdog.webp",
       options: [
         {
           label: "Standard",
           price: "R55",
-          image: "/baconbitehotdog.png",
+          image: "/baconbitehotdog.webp",
         },
       ],
     },
@@ -173,61 +173,61 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
   Wraps: [
     {
       name: "Crunch Box Wrap",
-      image: "/CrunchBoss1.png",
+      image: "/CrunchBoss1.webp",
       options: [
         {
           label: "Standard",
           price: "R59",
-          image: "/CrunchBoss1.png",
+          image: "/CrunchBoss1.webp",
         },
         {
           label: "Meal Option",
           price: "R69",
-          image: "/Levelupyourwrapgame.png",
+          image: "/Levelupyourwrapgame.webp",
         },
       ],
     },
     {
       name: "Kasi Styled Wrap Small",
-      image: "/KasiStyledWrapSmall.png",
+      image: "/KasiStyledWrapSmall.webp",
       options: [
         {
           label: "Standard",
           price: "R35",
-          image: "/KasiStyledWrapSmall.png",
+          image: "/KasiStyledWrapSmall.webp",
         },
       ],
     },
     {
       name: "Kasi Styled Wrap Medium",
-      image: "/KasiStyleWrapMedium.png",
+      image: "/KasiStyleWrapMedium.webp",
       options: [
         {
           label: "Standard",
           price: "R55",
-          image: "/KasiStyleWrapMedium.png",
+          image: "/KasiStyleWrapMedium.webp",
         },
       ],
     },
     {
       name: "Kasi Styled Wraps Large",
-      image: "/KasiStyledWrapLarge2.png",
+      image: "/KasiStyledWrapLarge2.webp",
       options: [
         {
           label: "Standard",
           price: "R75",
-          image: "/KasiStyledWrapLarge2.png",
+          image: "/KasiStyledWrapLarge2.webp",
         },
       ],
     },
     {
       name: "Kasi Styled Wrap Extra Large",
-      image: "/KasiStyledWrapXL.png",
+      image: "/KasiStyledWrapXL.webp",
       options: [
         {
           label: "Standard",
           price: "R95",
-          image: "/KasiStyledWrapXL.png",
+          image: "/KasiStyledWrapXL.webp",
         },
       ],
     },
@@ -235,23 +235,23 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
   StickyWings: [
     {
       name: "Mama's Sticky Wings",
-      image: "/Mamastickywingsnow!.png",
+      image: "/Mamastickywingsnow!.webp",
       options: [
         {
           label: "Standard",
           price: "R59",
-          image: "/Mamastickywingsnow!.png",
+          image: "/Mamastickywingsnow!.webp",
         },
       ],
     },
     {
       name: "Mama's Sticky Wings",
-      image: "/MamaWings10.png",
+      image: "/MamaWings10.webp",
       options: [
         {
           label: "standard",
           price: "R110",
-          image: "/MamaWings10.png",
+          image: "/MamaWings10.webp",
         }
       ]
     }
@@ -259,56 +259,56 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
   Sides: [
     {
       name: "Flamin Hot Street-style Tacos",
-      image: "/FlaminHotStreet-styleTacos.png",
+      image: "/FlaminHotStreet-styleTacos.webp",
       options: [
         {
           label: "Standard",
           price: "R75",
-          image: "/FlaminHotStreet-styleTacos.png",
+          image: "/FlaminHotStreet-styleTacos.webp",
         },
       ],
     },
     {
       name: "Small Fries",
-      image: "/smallFriesBg.png",
+      image: "/smallFriesBg.webp",
       options: [
         {
           label: "Standard",
           price: "R10",
-          image: "/smallFriesBg.png",
+          image: "/smallFriesBg.webp",
         },
       ],
     },
     {
       name: "Cheesy Jalapeno Fries",
-      image: "/CheesyjalapenoFries.png",
+      image: "/CheesyjalapenoFries.webp",
       options: [
         {
           label: "Standard",
           price: "R45",
-          image: "/CheesyjalapenoFries.png",
+          image: "/CheesyjalapenoFries.webp",
         },
       ],
     },
     {
       name: "Lunch Box Toast",
-      image: "/Lunchboxtoastwithmeltedcheese.png",
+      image: "/Lunchboxtoastwithmeltedcheese.webp",
       options: [
         {
           label: "Standard",
           price: "R35",
-          image: "/Lunchboxtoastwithmeltedcheese.png",
+          image: "/Lunchboxtoastwithmeltedcheese.webp",
         },
       ],
     },
     {
       name: "Bundle of Joys",
-      image: "/bundleofjoymealdeal.png",
+      image: "/bundleofjoymealdeal.webp",
       options: [
         {
           label: "Standard",
           price: "R90",
-          image: "/bundleofjoymealdeal.png",
+          image: "/bundleofjoymealdeal.webp",
         },
       ],
     },
@@ -316,34 +316,34 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
   Drinks: [
     {
       name: "Sprite",
-      image: "/Sprite.png",
+      image: "/Sprite.webp",
       options: [
         {
           label: "Standard",
           price: "R19",
-          image: "/Sprite.png",
+          image: "/Sprite.webp",
         },
       ],
     },
     {
       name: "Coke",
-      image: "/coke.png",
+      image: "/coke.webp",
       options: [
         {
           label: "Standard",
           price: "R19",
-          image: "/coke.png",
+          image: "/coke.webp",
         },
       ],
     },
     {
       name: "Fanta Orange",
-      image: "/Fanta.png",
+      image: "/Fanta.webp",
       options: [
         {
           label: "Standard",
           price: "R19",
-          image: "/Fanta.png",
+          image: "/Fanta.webp",
         },
       ],
     },

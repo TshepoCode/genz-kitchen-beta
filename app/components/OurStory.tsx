@@ -9,7 +9,7 @@ export default function OurStory() {
       <section className="max-w-6xl mx-auto px-6">
           <div className="relative w-full h-[400px] rounded-2xl overflow-hidden border border-zinc-800">
               <Image
-              src="/singlemingleburger.jpg"
+              src="/singlemingleburger.webp"
               alt="Gen Z Kitchen Food"
               fill
               className="object-cover"

@@ -34,7 +34,7 @@ export default function Hero() {
                 <div className="flex-1 flex justify-center">
                     <div className="relative w-[350px] h-[350px] md:w-[450px] md:h-[450px]">
                         <Image
-                        src="/GiveMeZunguburgerpromo.png" // <-- put your image in /public
+                        src="/GiveMeZunguburgerpromo.webp" // <-- put your image in /public
                         alt="Burger Meal"
                         fill
                         className="object-contain"
