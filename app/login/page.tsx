@@ -102,7 +102,9 @@ export default function LoginPage() {
     }
 
     if (!isLogin && (!hasLowercase || !hasSymbol)) {
-      alert("Please include lowercase letters and symbols to make your password stronger.");
+      alert(
+        "Please include lowercase letters and symbols to make your password stronger."
+      );
       return;
     }
 
@@ -125,7 +127,7 @@ export default function LoginPage() {
         return;
       }
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
         options: {
@@ -138,6 +140,27 @@ export default function LoginPage() {
       if (error) {
         alert(error.message);
         return;
+      }
+
+      if (data.user) {
+        const profileResponse = await fetch("/api/create-profile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: data.user.id,
+            fullName: fullName.trim(),
+            email: cleanEmail,
+          }),
+        });
+
+        const profileData = await profileResponse.json();
+
+        if (!profileResponse.ok) {
+          alert(profileData.error || "Account created, but profile setup failed.");
+          return;
+        }
       }
 
       alert("Account created successfully. You can now login.");
@@ -221,15 +244,27 @@ export default function LoginPage() {
                       Password strength tips:
                     </p>
 
-                    <p className={hasMinLength ? "text-lime-600" : "text-zinc-500"}>
+                    <p
+                      className={
+                        hasMinLength ? "text-lime-600" : "text-zinc-500"
+                      }
+                    >
                       Must be at least 6 characters
                     </p>
 
-                    <p className={hasLowercase ? "text-lime-600" : "text-zinc-500"}>
+                    <p
+                      className={
+                        hasLowercase ? "text-lime-600" : "text-zinc-500"
+                      }
+                    >
                       Include lowercase letters
                     </p>
 
-                    <p className={hasSymbol ? "text-lime-600" : "text-zinc-500"}>
+                    <p
+                      className={
+                        hasSymbol ? "text-lime-600" : "text-zinc-500"
+                      }
+                    >
                       Include symbols like ! @ # $ %
                     </p>
                   </div>
