@@ -87,7 +87,7 @@ export default function NavBar({ onCartClick }: NavBarProps) {
           </button>
 
           <Link href="/" className="text-xl font-extrabold tracking-wide md:text-2xl">
-            <span className="text-lime-400">GenZ</span> Kitchen <span className="text-blue-500 text-sm font-italic">Beta</span>
+            <span className="text-lime-400">GenZ</span> Kitchen <span className="text-blue-500 text-sm">Beta</span>
           </Link>
         </div>
 
@@ -147,7 +147,7 @@ export default function NavBar({ onCartClick }: NavBarProps) {
                 {profile.full_name}
               </span>
 
-              <span className="rounded-full bg-lime-400 px-2 py-1 text-xs font-bold text-black md:px-3 md:py-2">
+              <span className="rounded-full bg-red-400 px-2 py-1 text-xs font-bold text-black md:px-3 md:py-2">
                 {profile.points}
               </span>
 
