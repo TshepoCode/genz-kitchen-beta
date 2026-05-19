@@ -39,6 +39,8 @@ export default function LoginPage() {
   };
 
   const handlePasswordReset = async () => {
+    if (resetLoading) return;
+
     const cleanResetEmail = resetEmail.trim().toLowerCase();
 
     if (!cleanResetEmail) {
@@ -48,27 +50,30 @@ export default function LoginPage() {
 
     setResetLoading(true);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(
-      cleanResetEmail,
-      {
-        redirectTo: `${window.location.origin}/update-password`,
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        cleanResetEmail,
+        {
+          redirectTo: `${window.location.origin}/update-password`,
+        }
+      );
+
+      if (error) {
+        alert(`Error sending recovery email: ${error.message}`);
+        return;
       }
-    );
 
-    setResetLoading(false);
-
-    if (error) {
-      console.error("Password reset error:", error);
-      alert(`Error sending recovery email: ${error.message}`);
-      return;
+      alert("Password reset email sent. Please check your inbox or spam folder.");
+      setResetEmail("");
+      setShowResetForm(false);
+    } finally {
+      setResetLoading(false);
     }
-
-    alert("Password reset email sent. Please check your inbox or spam folder.");
-    setResetEmail("");
-    setShowResetForm(false);
   };
 
   const handleAuth = async () => {
+    if (loading) return;
+
     const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanEmail || !password) {
@@ -103,55 +108,44 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
+
+        if (error) {
+          alert(error.message);
+          return;
+        }
+
+        resetForm();
+        window.location.href = "/menu";
+        return;
+      }
+
+      const { error } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
+        options: {
+          data: {
+            full_name: fullName.trim(),
+          },
+        },
       });
-
-      setLoading(false);
 
       if (error) {
         alert(error.message);
         return;
       }
 
+      alert("Account created successfully. You can now login.");
+      setIsLogin(true);
       resetForm();
-      window.location.href = "/menu";
-      return;
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-      email: cleanEmail,
-      password,
-    });
-
-    if (error) {
+    } finally {
       setLoading(false);
-      alert(error.message);
-      return;
     }
-
-    if (data.user) {
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: data.user.id,
-        full_name: fullName.trim(),
-        email: cleanEmail,
-        points: 0,
-      });
-
-      if (profileError) {
-        setLoading(false);
-        alert(profileError.message);
-        return;
-      }
-    }
-
-    setLoading(false);
-
-    alert("Account created successfully. You can now login.");
-    setIsLogin(true);
-    resetForm();
   };
 
   return (
@@ -243,6 +237,7 @@ export default function LoginPage() {
               )}
 
               <button
+                type="button"
                 onClick={handleAuth}
                 disabled={loading || resetLoading}
                 className="w-full rounded-xl bg-lime-400 px-4 py-3 font-bold text-black transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50"
@@ -254,6 +249,7 @@ export default function LoginPage() {
             <p className="mt-6 text-center text-sm text-zinc-600">
               {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
               <button
+                type="button"
                 onClick={() => {
                   setIsLogin(!isLogin);
                   resetForm();
@@ -269,6 +265,7 @@ export default function LoginPage() {
               <p className="mt-4 text-center text-sm text-zinc-600">
                 Forgot your password?{" "}
                 <button
+                  type="button"
                   onClick={() => {
                     setShowResetForm(true);
                     setResetEmail("");
@@ -292,6 +289,7 @@ export default function LoginPage() {
             />
 
             <button
+              type="button"
               onClick={handlePasswordReset}
               disabled={loading || resetLoading}
               className="w-full rounded-xl bg-black px-4 py-3 font-bold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
@@ -300,6 +298,7 @@ export default function LoginPage() {
             </button>
 
             <button
+              type="button"
               onClick={() => {
                 setShowResetForm(false);
                 setResetEmail("");
