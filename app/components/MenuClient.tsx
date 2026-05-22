@@ -58,6 +58,15 @@ const categories = [
 type CategoryName = (typeof categories)[number]["name"];
 type BuilderStep = "option" | "chips" | "drink" | "review";
 
+const optionalChipsStep: MealStep = {
+  title: "Would you like to add chips?",
+  type: "single",
+  choices: [
+    { name: "Add Small Chips", image: "/smallFriesBg.webp", price: "R10" },
+    { name: "No Chips", image: "/smallFriesBg.webp", price: "R0" },
+  ],
+};
+
 const menuItems: Record<CategoryName, MenuItem[]> = {
   Burgers: [
     {
@@ -68,6 +77,7 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
           label: "Burger Only",
           price: "R59",
           image: "/GiveMeZungusingle.webp",
+          customizations: [optionalChipsStep],
         },
         {
           label: "Meal Deal",
@@ -98,12 +108,13 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
       options: [
         {
           label: "Burger Only",
-          price: "R79",
+          price: "R95",
           image: "/Matla Thata.webp",
+          customizations: [optionalChipsStep],
         },
         {
           label: "Meal Option",
-          price: "R95",
+          price: "R129",
           image: "/MatlaThataMeal2.webp",
           customizations: [
             {
@@ -132,6 +143,7 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
           label: "Burger Only",
           price: "R35",
           image: "/singleMingleWeb.webp",
+          customizations: [optionalChipsStep],
         },
         {
           label: "Meal",
@@ -157,6 +169,7 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
       ],
     },
   ],
+
   Hotdogs: [
     {
       name: "Bacon Bite Hotdog",
@@ -170,6 +183,7 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
       ],
     },
   ],
+
   Wraps: [
     {
       name: "Crunch Box Wrap",
@@ -232,6 +246,7 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
       ],
     },
   ],
+
   StickyWings: [
     {
       name: "Mama's Sticky Wings",
@@ -249,13 +264,14 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
       image: "/MamaWings10.webp",
       options: [
         {
-          label: "standard",
+          label: "Standard",
           price: "R110",
           image: "/MamaWings10.webp",
-        }
-      ]
-    }
+        },
+      ],
+    },
   ],
+
   Sides: [
     {
       name: "Flamin Hot Street-style Tacos",
@@ -274,7 +290,7 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
       options: [
         {
           label: "Standard",
-          price: "R10",
+          price: "R20",
           image: "/smallFriesBg.webp",
         },
       ],
@@ -313,6 +329,7 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
       ],
     },
   ],
+
   Drinks: [
     {
       name: "Sprite",
@@ -363,11 +380,12 @@ export default function MenuClient() {
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isFinalCheckoutOpen, setIsFinalCheckoutOpen] = useState(false);
   const [donationAmount, setDonationAmount] = useState(0);
-  const [orderType, setOrderType] = useState<"delivery" | "collection" | "">(
-    ""
-  );
+  const [orderType, setOrderType] = useState<"delivery" | "collection" | "">("");
 
   const { cart, addToCart, removeFromCart, clearCart } = useCart();
+
+  const chipsStep = selectedOption?.customizations?.[0];
+  const drinkStep = selectedOption?.customizations?.[1];
 
   useEffect(() => {
     async function loadCustomer() {
@@ -385,6 +403,18 @@ export default function MenuClient() {
 
   function getPriceNumber(price: string) {
     return Number(price.replace("R", "").replace(",", "").trim()) || 0;
+  }
+
+  function getSelectedTotalPrice() {
+    const optionPrice = selectedOption ? getPriceNumber(selectedOption.price) : 0;
+    const chipsPrice = selectedChips?.price
+      ? getPriceNumber(selectedChips.price)
+      : 0;
+    const drinkPrice = selectedDrink?.price
+      ? getPriceNumber(selectedDrink.price)
+      : 0;
+
+    return optionPrice + chipsPrice + drinkPrice;
   }
 
   const cartTotal = cart.reduce((total, item) => {
@@ -446,7 +476,12 @@ export default function MenuClient() {
 
   function handleSelectChips(chip: ChoiceItem) {
     setSelectedChips(chip);
-    setBuilderStep("drink");
+
+    if (drinkStep) {
+      setBuilderStep("drink");
+    } else {
+      setBuilderStep("review");
+    }
   }
 
   function handleSelectDrink(drink: ChoiceItem) {
@@ -457,19 +492,27 @@ export default function MenuClient() {
   function handleAddToCart() {
     if (!selectedCard || !selectedOption) return;
 
-    const needsMealChoices = Boolean(selectedOption.customizations?.length);
+    const hasChipsStep = Boolean(chipsStep);
+    const hasDrinkStep = Boolean(drinkStep);
 
-    if (needsMealChoices && (!selectedChips || !selectedDrink)) {
-      alert("Please select chips and drink first.");
+    if (hasChipsStep && !selectedChips) {
+      alert("Please choose chips or no chips first.");
       return;
     }
+
+    if (hasDrinkStep && !selectedDrink) {
+      alert("Please select a drink first.");
+      return;
+    }
+
+    const finalPrice = getSelectedTotalPrice();
 
     addToCart({
       id: crypto.randomUUID(),
       itemName: selectedCard.name,
       optionLabel: selectedOption.label,
-      basePrice: selectedOption.price,
-      price: getPriceNumber(selectedOption.price),
+      basePrice: `R${finalPrice}`,
+      price: finalPrice,
       quantity: 1,
       image: typeof selectedOption.image === "string" ? selectedOption.image : "",
       chips: selectedChips?.name,
@@ -487,9 +530,6 @@ export default function MenuClient() {
     if (!selectedCard) return "";
     return `${selectedCard.name} Options`;
   }, [selectedCard]);
-
-  const chipsStep = selectedOption?.customizations?.[0];
-  const drinkStep = selectedOption?.customizations?.[1];
 
   function handlePlaceOrder() {
     if (!orderType) return;
@@ -613,7 +653,7 @@ Total To Pay: R${finalTotal}`;
                   onClick={() => handleSelectCard(item)}
                   className="overflow-hidden rounded-2xl border border-zinc-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:border-lime-400"
                 >
-                  <div className="relative overflow-hidden h-[280px] w-full md:h-[280px] sm:h-[180px] sm:w-full">
+                  <div className="relative h-[280px] w-full overflow-hidden sm:h-[180px] md:h-[280px]">
                     <Image
                       src={item.image}
                       alt={item.name}
@@ -626,7 +666,7 @@ Total To Pay: R${finalTotal}`;
                     <p className="text-lg font-semibold text-black">
                       {item.name}
                     </p>
-                    <p className="text-base font-bold text-white bg-lime-600 inline-block rounded-full px-3 py-1 w-max">
+                    <p className="inline-block w-max rounded-full bg-lime-600 px-3 py-1 text-base font-bold text-white">
                       From {getLowestPrice(item.options)}
                     </p>
                   </div>
@@ -643,7 +683,7 @@ Total To Pay: R${finalTotal}`;
                       onClick={() => handleSelectOption(option)}
                       className="overflow-hidden rounded-2xl border border-zinc-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:border-lime-400"
                     >
-                      <div className="relative overflow-hidden h-[280px] w-full md:h-[280px] sm:h-[180px] sm:w-full">
+                      <div className="relative h-[280px] w-full overflow-hidden sm:h-[180px] md:h-[280px]">
                         <Image
                           src={option.image}
                           alt={option.label}
@@ -684,7 +724,7 @@ Total To Pay: R${finalTotal}`;
                         onClick={() => handleSelectChips(chip)}
                         className="overflow-hidden rounded-2xl border border-zinc-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:border-lime-400"
                       >
-                        <div className="relative h-[180px] w-full md:h-[180px] overflow-hidden">
+                        <div className="relative h-[180px] w-full overflow-hidden">
                           <Image
                             src={chip.image}
                             alt={chip.name}
@@ -694,12 +734,20 @@ Total To Pay: R${finalTotal}`;
                         </div>
 
                         <div className="space-y-3 p-3 md:p-5">
-                          <h3 className="text-sm font-semibold text-black md:text-lg">
-                            {chip.name}
-                          </h3>
+                          <div className="flex items-center justify-between gap-3">
+                            <h3 className="text-sm font-semibold text-black md:text-lg">
+                              {chip.name}
+                            </h3>
+
+                            {chip.price && (
+                              <p className="text-sm font-bold text-lime-600 md:text-lg">
+                                {chip.price}
+                              </p>
+                            )}
+                          </div>
 
                           <div className="rounded-xl bg-lime-400 px-4 py-2 text-center text-sm font-semibold text-black md:py-3">
-                            Select Chips
+                            Select
                           </div>
                         </div>
                       </button>
@@ -721,7 +769,7 @@ Total To Pay: R${finalTotal}`;
                         onClick={() => handleSelectDrink(drink)}
                         className="overflow-hidden rounded-2xl border border-zinc-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:border-lime-400"
                       >
-                        <div className="relative overflow-hidden h-[280px] w-full md:h-[280px] sm:h-[180px] sm:w-full">
+                        <div className="relative h-[280px] w-full overflow-hidden sm:h-[180px] md:h-[280px]">
                           <Image
                             src={drink.image}
                             alt={drink.name}
@@ -764,11 +812,21 @@ Total To Pay: R${finalTotal}`;
                       </span>
                     </p>
 
+                    <p className="flex justify-between text-sm">
+                      <span className="text-zinc-600">Base Price</span>
+                      <span className="font-semibold">
+                        {selectedOption.price}
+                      </span>
+                    </p>
+
                     {selectedChips && (
                       <p className="flex justify-between text-sm">
                         <span className="text-zinc-600">Chips</span>
                         <span className="font-semibold">
                           {selectedChips.name}
+                          {selectedChips.price
+                            ? ` • ${selectedChips.price}`
+                            : ""}
                         </span>
                       </p>
                     )}
@@ -783,9 +841,9 @@ Total To Pay: R${finalTotal}`;
                     )}
 
                     <p className="flex justify-between border-t pt-3 text-sm">
-                      <span className="text-zinc-600">Price</span>
+                      <span className="text-zinc-600">Total Price</span>
                       <span className="text-base font-bold text-lime-500">
-                        {selectedOption.price}
+                        R{getSelectedTotalPrice()}
                       </span>
                     </p>
                   </div>
@@ -794,7 +852,7 @@ Total To Pay: R${finalTotal}`;
                     onClick={handleAddToCart}
                     className="mt-5 w-full rounded-xl bg-black px-4 py-3 font-semibold text-white transition hover:opacity-90"
                   >
-                    Add to Cart • {selectedOption.price}
+                    Add to Cart • R{getSelectedTotalPrice()}
                   </button>
                 </div>
               )}
