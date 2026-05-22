@@ -62,7 +62,7 @@ const optionalChipsStep: MealStep = {
   title: "Would you like to add chips?",
   type: "single",
   choices: [
-    { name: "Add Small Chips", image: "/smallFriesBg.webp", price: "R10" },
+    { name: "With Small Chips", image: "/smallFriesBg.webp", price: "R10" },
     { name: "No Chips", image: "/smallFriesBg.webp", price: "R0" },
   ],
 };
