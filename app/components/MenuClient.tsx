@@ -297,12 +297,12 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
     },
     {
       name: "Cheesy Jalapeno Fries",
-      image: "/CheesyjalapenoFries.webp",
+      image: "/CheesyJalapenoFries.webp",
       options: [
         {
           label: "Standard",
           price: "R45",
-          image: "/CheesyjalapenoFries.webp",
+          image: "/CheesyJalapenoFries.webp",
         },
       ],
     },
@@ -319,12 +319,12 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
     },
     {
       name: "Bundle of Joys",
-      image: "/bundleofjoymealdeal.webp",
+      image: "/Bundleofjoymealdeal.webp",
       options: [
         {
           label: "Standard",
           price: "R90",
-          image: "/bundleofjoymealdeal.webp",
+          image: "/Bundleofjoymealdeal.webp",
         },
       ],
     },
@@ -526,6 +526,20 @@ export default function MenuClient() {
     setIsCartOpen(true);
   }
 
+  async function handleCheckoutClick() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.email) {
+      alert("Please login first before checkout.");
+      return;
+    }
+
+    setCustomerEmail(user.email);
+    setIsDonationOpen(true);
+  }
+
   const selectedHeading = useMemo(() => {
     if (!selectedCard) return "";
     return `${selectedCard.name} Options`;
@@ -534,8 +548,8 @@ export default function MenuClient() {
   function handlePlaceOrder() {
     if (!orderType) return;
 
-    if (rewardPointsTotal > 0 && !customerEmail) {
-      alert("Please login first before redeeming rewards.");
+    if (!customerEmail) {
+      alert("Please login first before placing your order.");
       return;
     }
 
@@ -548,7 +562,7 @@ export default function MenuClient() {
 
         if (item.isReward) {
           return `${index + 1}. REWARD ITEM: ${item.itemName}
-Customer Email: ${item.customerEmail || customerEmail || "Not logged in"}
+Customer Email: ${item.customerEmail || customerEmail}
 Points To Subtract: ${item.pointsCost || 0}
 Price: R0`;
         }
@@ -563,7 +577,7 @@ Price: ${item.basePrice}`;
 
     const message = `Hi GenZ Kitchen, I would like to place an order:
 
-Customer Email: ${customerEmail || "Not logged in"}
+Customer Email: ${customerEmail}
 
 ${orderMessage}
 
@@ -967,7 +981,7 @@ Total To Pay: R${finalTotal}`;
                 </div>
 
                 <button
-                  onClick={() => setIsDonationOpen(true)}
+                  onClick={handleCheckoutClick}
                   className="w-full rounded-xl bg-lime-400 px-4 py-3 font-bold text-black transition hover:bg-lime-300"
                 >
                   Checkout
@@ -1052,7 +1066,9 @@ Total To Pay: R${finalTotal}`;
 
             <p className="text-sm text-zinc-500">
               Delivery is currently available in Kagiso only. If you choose
-              delivery, please send your address on WhatsApp.
+              delivery, please send your address on WhatsApp. Please Note that 
+              if you are not using Capitec Bank, You are required to choose a 
+              immediate payment and send proof of Payment.
             </p>
 
             <div className="space-y-1 border-t pt-3 text-sm">
