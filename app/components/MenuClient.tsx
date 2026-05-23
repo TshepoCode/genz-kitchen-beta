@@ -51,7 +51,7 @@ const categories = [
   { name: "Hotdogs", icon: Sandwich },
   { name: "Wraps", icon: UtensilsCrossed },
   { name: "StickyWings", icon: Drumstick },
-  { name: "Sides", icon: PackageOpen },
+  { name: "Sides", icon: PackageOpen, isNew: true },
   { name: "Drinks", icon: CupSoda },
 ] as const;
 
@@ -66,6 +66,8 @@ const optionalChipsStep: MealStep = {
     { name: "No Chips", image: "/smallFriesBg.webp", price: "R0" },
   ],
 };
+
+const influencerCodes = ["Teenono01#", "Romeo01#", "Mpho04#", "Dakalo04#"];
 
 const menuItems: Record<CategoryName, MenuItem[]> = {
   Burgers: [
@@ -281,6 +283,7 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
           label: "Standard",
           price: "R75",
           image: "/FlaminHotStreet-styleTacos.webp",
+          customizations: [optionalChipsStep],
         },
       ],
     },
@@ -302,7 +305,7 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
         {
           label: "Standard",
           price: "R45",
-          image: "/CheesyJalapenoFries.webp",
+          image: "/CheesyjalapenoFries.webp",
         },
       ],
     },
@@ -314,6 +317,7 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
           label: "Standard",
           price: "R35",
           image: "/Lunchboxtoastwithmeltedcheese.webp",
+          customizations: [optionalChipsStep],
         },
       ],
     },
@@ -324,7 +328,7 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
         {
           label: "Standard",
           price: "R90",
-          image: "/Bundleofjoymealdeal.webp",
+          image: "/bundleofjoymealdeal.webp",
         },
       ],
     },
@@ -369,6 +373,8 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
 
 export default function MenuClient() {
   const [customerEmail, setCustomerEmail] = useState("");
+  const [influencerCode, setInfluencerCode] = useState("");
+
   const [active, setActive] = useState<CategoryName>("Burgers");
   const [selectedCard, setSelectedCard] = useState<MenuItem | null>(null);
   const [selectedOption, setSelectedOption] = useState<MenuOption | null>(null);
@@ -380,7 +386,9 @@ export default function MenuClient() {
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isFinalCheckoutOpen, setIsFinalCheckoutOpen] = useState(false);
   const [donationAmount, setDonationAmount] = useState(0);
-  const [orderType, setOrderType] = useState<"delivery" | "collection" | "">("");
+  const [orderType, setOrderType] = useState<"delivery" | "collection" | "">(
+    ""
+  );
 
   const { cart, addToCart, removeFromCart, clearCart } = useCart();
 
@@ -492,15 +500,12 @@ export default function MenuClient() {
   function handleAddToCart() {
     if (!selectedCard || !selectedOption) return;
 
-    const hasChipsStep = Boolean(chipsStep);
-    const hasDrinkStep = Boolean(drinkStep);
-
-    if (hasChipsStep && !selectedChips) {
+    if (chipsStep && !selectedChips) {
       alert("Please choose chips or no chips first.");
       return;
     }
 
-    if (hasDrinkStep && !selectedDrink) {
+    if (drinkStep && !selectedDrink) {
       alert("Please select a drink first.");
       return;
     }
@@ -578,6 +583,7 @@ Price: ${item.basePrice}`;
     const message = `Hi GenZ Kitchen, I would like to place an order:
 
 Customer Email: ${customerEmail}
+Influencer Code: ${influencerCode || "None"}
 
 ${orderMessage}
 
@@ -597,6 +603,7 @@ Total To Pay: R${finalTotal}`;
     clearCart();
     setOrderType("");
     setDonationAmount(0);
+    setInfluencerCode("");
     setIsFinalCheckoutOpen(false);
     setIsDonationOpen(false);
     setIsCartOpen(false);
@@ -621,14 +628,28 @@ Total To Pay: R${finalTotal}`;
                 <button
                   key={item.name}
                   onClick={() => handleCategoryChange(item.name)}
-                  className={`flex items-center gap-2 whitespace-nowrap rounded-xl border px-4 py-2 text-sm transition md:text-base ${
+                  className={`flex items-center justify-between gap-2 whitespace-nowrap rounded-xl border px-4 py-2 text-sm transition md:text-base ${
                     isActive
                       ? "border-lime-400 bg-lime-400 font-semibold text-black"
                       : "border-zinc-200 bg-black text-white hover:text-lime-400"
                   }`}
                 >
-                  <Icon size={18} />
-                  <span>{item.name}</span>
+                  <div className="flex items-center gap-2">
+                    <Icon size={18} />
+                    <span>{item.name}</span>
+                  </div>
+
+                  {"isNew" in item && item.isNew && (
+                    <span
+                      className={`rounded-full px-2 py-1 text-[9px] font-extrabold tracking-wider animate-pulse ${
+                        isActive
+                          ? "bg-black text-white"
+                          : "bg-yellow-500 text-black"
+                      }`}
+                    >
+                      NEW
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -1003,6 +1024,26 @@ Total To Pay: R${finalTotal}`;
               Would you like to add a small donation?
             </p>
 
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-black">
+                Influencer Code
+              </label>
+
+              <select
+                value={influencerCode}
+                onChange={(e) => setInfluencerCode(e.target.value)}
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-black outline-none focus:border-lime-400"
+              >
+                <option value="">No influencer code</option>
+
+                {influencerCodes.map((code) => (
+                  <option key={code} value={code}>
+                    {code}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <button
               onClick={() => {
                 setDonationAmount(5);
@@ -1066,14 +1107,13 @@ Total To Pay: R${finalTotal}`;
 
             <p className="text-sm text-zinc-500">
               Delivery is currently available in Kagiso only. If you choose
-              delivery, please send your address on WhatsApp. Please Note that 
-              if you are not using Capitec Bank, You are required to choose a 
-              immediate payment and send proof of Payment.
+              delivery, please send your address on WhatsApp.
             </p>
 
             <div className="space-y-1 border-t pt-3 text-sm">
               <p>Paid Items: R{cartTotal}</p>
               <p>Donation: R{donationAmount}</p>
+              <p>Influencer Code: {influencerCode || "None"}</p>
               <p>Delivery: R{orderType === "delivery" ? 30 : 0}</p>
 
               {rewardPointsTotal > 0 && (
