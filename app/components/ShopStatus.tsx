@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 const OPEN_HOUR = 9;
 const WARNING_HOUR = 17;
 const WARNING_MINUTE = 30;
-const CLOSE_HOUR = 19;
+const CLOSE_HOUR = 18;
 
 export default function ShopStatus() {
   const [showStatus, setShowStatus] = useState(false);
@@ -54,8 +54,8 @@ export default function ShopStatus() {
 
   return (
     <div className="rounded-full border border-red-500 bg-red-950 px-4 py-3 text-white">
-      <p className="text-sm font-bold">{message}</p>
-      <p className="text-xs text-red-300">Trading hours: 09:00 - 19:00</p>
+      <p className="ml-10 text-sm font-bold">{message}</p>
+      <p className="ml-10 text-xs text-red-300">Trading hours: 09:00 - 19:00</p>
     </div>
   );
 }
