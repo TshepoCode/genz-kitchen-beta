@@ -3,6 +3,7 @@
 import Image, { StaticImageData } from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import NavBar from "../components/NavBar";
+import ShopStatus from "./ShopStatus";
 import { useCart } from "@/app/context/CartContext";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -612,6 +613,7 @@ Total To Pay: R${finalTotal}`;
   return (
     <main className="min-h-screen bg-white text-black">
       <NavBar onCartClick={() => setIsCartOpen(true)} />
+      <ShopStatus />
 
       <div className="mx-auto mt-6 flex max-w-7xl flex-col gap-8 px-4 pb-28 md:mt-10 md:flex-row md:px-6 md:pb-10">
         <aside className="fixed bottom-0 left-0 z-50 w-full border-t border-zinc-200 bg-white md:static md:w-60 md:border-t-0 md:border-r md:border-zinc-200 md:pr-6">
