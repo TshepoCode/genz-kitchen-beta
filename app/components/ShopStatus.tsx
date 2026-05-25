@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 const OPEN_HOUR = 9;
-const WARNING_HOUR = 17;
+const WARNING_HOUR = 16;
 const WARNING_MINUTE = 30;
 const CLOSE_HOUR = 18;
 
