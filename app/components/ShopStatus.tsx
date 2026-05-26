@@ -55,7 +55,7 @@ export default function ShopStatus() {
   return (
     <div className="rounded-full border border-red-500 bg-red-950 px-4 py-3 text-white">
       <p className="ml-10 text-sm font-bold">{message}</p>
-      <p className="ml-10 text-xs text-red-300">Trading hours: 09:00 - 19:00</p>
+      <p className="ml-10 text-xs text-red-300">Trading hours: 09:00 - 18:00</p>
     </div>
   );
 }
