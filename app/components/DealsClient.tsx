@@ -6,6 +6,7 @@ import NavBar from "./NavBar";
 import { createClient } from "@supabase/supabase-js";
 import { useCart } from "@/app/context/CartContext";
 import { useRouter } from "next/navigation";
+import ShopStatus from "./ShopStatus";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -171,6 +172,7 @@ export default function DealsClient() {
   return (
     <main className="min-h-screen bg-white text-black">
       <NavBar onCartClick={() => router.push("/menu")} />
+      <ShopStatus />
 
       <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-8 rounded-3xl bg-zinc-50 p-5 sm:p-7">
