@@ -22,11 +22,11 @@ const articles = [
     title: "Burger Updates Are Coming 🍔",
     image: "/GiveMeZunguburgerpromo.webp",
     category: "Burger Updates",
-    date: "30/05/2026",
-    author: "Tshepo M.",
+    date: "31/05/2026",
+    author: "Maria M.",
     content: [
-      "Our burgers are getting even better. GenZ Kitchen is working on more exciting burger options, meal combinations and bold sauces.",
-      "From Give Me Zungu to Matla Thata, we are building meals that bring big flavor, good value and a proper GenZ Kitchen experience.",
+      "Our burgers are getting even better. GenZ Kitchen is working on more exciting burger options, meal combinations and bold sauces. Keeping our flavour fresh and exciting is our top priority.",
+      "From Give Me Zungu to Matla Thata, we are building meals that bring big flavor, good value and a proper GenZ Kitchen experience. A Crispy Juciy Chicken Give Me Zungu burger is coming soon, and we are also working on a new burger that will be launching in the next few weeks.",
       "Keep checking our news page for new burger drops, combo updates and limited-time specials.",
     ],
   },
@@ -39,6 +39,7 @@ const articles = [
     author: "Tshepo M.",
     content: [
       "GenZ Kitchen provides delivery around Kagiso, making it easier for customers to enjoy their favorite meals without leaving home.",
+      "However there's a huge gap in the delivery industry where customers often face issues with late deliveries, poor communication and lack of updates. We are working hard to improve our delivery experience and ensure that every order feels smooth from checkout to delivery. We are partnering with a delivery comapny located in kagiso to make things easy for us.",
       "We are improving our ordering flow, delivery communication and customer updates so every order feels smooth from checkout to delivery.",
       "More delivery updates will be announced as we continue improving the GenZ Kitchen experience.",
     ],

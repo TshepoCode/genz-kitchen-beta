@@ -1066,7 +1066,7 @@ Total To Pay: R${finalTotal}`;
               className="w-full rounded-xl bg-lime-400 py-3 font-bold"
             >
               Donate R12
-            </button>
+            </button >
 
             <button
               onClick={() => {
