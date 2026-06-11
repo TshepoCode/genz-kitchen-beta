@@ -68,7 +68,7 @@ const optionalChipsStep: MealStep = {
   ],
 };
 
-const influencerCodes = ["Teenono01#", "Romeo01#", "Mpho04#", "Dakalo04#"];
+const influencerCodes = ["Teenono01#", "TattoedHair06#","Romeo01#", "Mpho04#", "Dakalo04#"];
 
 const menuItems: Record<CategoryName, MenuItem[]> = {
   Burgers: [
