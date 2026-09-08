@@ -123,19 +123,7 @@ export default function NavBar({ onCartClick }: NavBarProps) {
             }
           >
             Deals
-          </Link>
-
-
-          <Link
-            href="/blog"
-            className={
-              pathname === "/deals"
-                ? "font-semibold text-lime-600"
-                : "hover:text-lime-500"
-            }
-          >
-            News
-          </Link>          
+          </Link>        
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">

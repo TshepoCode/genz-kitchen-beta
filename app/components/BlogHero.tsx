@@ -51,7 +51,7 @@ export default function BlogHero() {
         <div className="mt-5 overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-xl">
           <div className="relative aspect-[16/9] overflow-hidden">
             <img
-              src="/cheesyJalapenoFries.webp"
+              src="/CheesyJalapenoFries.webp"
               alt="GenZ Kitchen"
               className="h-full w-full object-cover"
             />
