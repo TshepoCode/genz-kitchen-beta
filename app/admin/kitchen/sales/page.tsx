@@ -23,10 +23,30 @@ type CartItem = Product & {
 
 const products: Product[] = [
   {
-    id: "zungu-chips",
-    name: "Give Me Zungu + Chips",
+    id: "zungu",
+    name: "Give Me Zungu Burger",
     price: 59,
   },
+  {
+    id: "matla thata burger",
+    name: "Matla Thata Burger",
+    price: 95,
+  },  
+  {
+    id: "single and mingle ",
+    name: "Single & Mingle Burger",
+    price: 35,
+  }, 
+  {
+    id: "bacon bite hotdog",
+    name: "Bacon Bite Hotdog",
+    price: 55,
+  },  
+  {
+    id: "cheesy mince loaded hotdog",
+    name: "Cheesy Mince Loaded Hotdog",
+    price: 89,
+  },     
   {
     id: "chicken-quesadillas",
     name: "2 Chicken Quesadillas",
@@ -34,29 +54,84 @@ const products: Product[] = [
   },
   {
     id: "crunch-box-wrap",
-    name: "Crunch Box Chicken Wrap + Chips",
+    name: "Crunch Box Chicken Wrap",
     price: 59,
   },
   {
-    id: "cheesy-hotdog",
-    name: "Cheesy Hotdog",
+    id: "kasi styled wrap small",
+    name: "Kasi Styled Wrap (Small)",
+    price: 35,
+  },
+  {
+    id: "kasi styled wrap medium",
+    name: "Kasi Styled Wrap (Medium)",
     price: 55,
   },
   {
+    id: "kasi styled wrap large",
+    name: "Kasi Styled Wrap (Large)",
+    price: 75,
+  },     
+  {
+    id: "kasi styled wrap extra large",
+    name: "Kasi Styled Wrap ( Extra Large)",
+    price: 95,
+  }, 
+  {
     id: "sticky-wings-5",
     name: "Mama's Sticky Wings - 5 + Chips",
-    price: 89,
+    price: 59,
   },
   {
     id: "sticky-wings-10",
     name: "Mama's Sticky Wings - 10 + Chips",
-    price: 159,
+    price: 110,
   },
   {
     id: "small-chips-meal",
     name: "Small Chips in a meal",
     price: 10,
   },
+  {
+    id: "small-chips-alone",
+    name: "Small Chips alone",
+    price: 20,
+  }, 
+  {
+    id: "kasi flamed street-style tacos",
+    name: "Kasi Flamed Street-Style Tacos",
+    price: 75,
+  },
+   {
+    id: "cheesy jalapeno fries",
+    name: "Cheesy Jalapeno Fries",
+    price: 45,
+  },
+  {
+    id: "lunch box meal",
+    name: "Lunch Box Meal",
+    price: 35,
+  },    
+  {
+    id: "bundle of joy",
+    name: "Bundle of Joy",
+    price: 90,
+  },    
+  {
+    id: "sprite",
+    name: "Sprite",
+    price: 19,
+  }, 
+  {
+    id: "coke",
+    name: "Coke",
+    price: 19,
+  }, 
+  {
+    id: "fanta orange",
+    name: "Fanta Orange",
+    price: 19,
+  },        
 ];
 
 export default function SalesPage() {
