@@ -85,8 +85,8 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
-    name: "Sales",
-    href: "/admin/sales",
+    name: "Analytics",
+    href: "/admin/sales-analytics",
     icon: ShoppingCart,
   },
   {
@@ -498,7 +498,7 @@ export default function KitchenDashboardPage() {
               />
 
               <div className="relative h-full w-[280px] border-r border-zinc-800 bg-[#151515] p-4 shadow-2xl">
-                <div className="mb-5 flex items-center justify-between">
+                <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-lime-400 text-black">
                       <ChefHat
@@ -577,7 +577,7 @@ export default function KitchenDashboardPage() {
           {/* PAGE CONTENT */}
           {/* ========================= */}
 
-          <div className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1500px] px-4 py-6 sm:px-5 lg:px-6">
             {/* ERROR */}
             {error && (
               <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">
@@ -586,7 +586,7 @@ export default function KitchenDashboardPage() {
             )}
 
             {/* PAGE TITLE */}
-            <section className="mb-4">
+            <section className="mb-1">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <h1 className="text-2xl font-black tracking-tight text-slate-950">
@@ -602,7 +602,7 @@ export default function KitchenDashboardPage() {
                 </div>
 
                 <div className="flex w-fit items-center gap-1 rounded-full border border-lime-300 bg-lime-100 px-3 py-2">
-                  <span className="h-1 w-2 animate-pulse rounded-full bg-lime-500" />
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-lime-500" />
 
                   <span className="text-xs font-black uppercase tracking-wider text-lime-800">
                     Sales Live
@@ -612,13 +612,13 @@ export default function KitchenDashboardPage() {
             </section>
 
             {/* RECORD SALE */}
-            <section className="mb-4">
+            <section className="mb-2 mt-1">
               <Link
                 href="/admin/sales"
                 className="group flex items-center justify-between rounded-2xl bg-lime-400 p-4 text-black shadow-lg transition hover:bg-lime-200"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-7 w-11 items-center justify-center rounded-xl bg-black text-lime-400">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-9 w-11 items-center justify-center rounded-xl bg-black text-lime-400">
                     <Plus
                       size={21}
                     />
@@ -645,7 +645,7 @@ export default function KitchenDashboardPage() {
             {/* SUMMARY */}
             {/* ========================= */}
 
-            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <section className="grid gap-2 xs:grid-cols-3 lg:grid-cols-4">
               <MetricCard
                 title="Total Revenue"
                 value={formatMoney(
@@ -703,7 +703,7 @@ export default function KitchenDashboardPage() {
             {/* PRODUCT + PAYMENTS */}
             {/* ========================= */}
 
-            <section className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+            <section className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
               {/* PRODUCT SALES */}
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-6 flex items-center justify-between">

@@ -78,7 +78,7 @@ const products: Product[] = [
     price: 95,
   }, 
   {
-    id: "sticky-wings-5",
+    id: "sticky-wings-4",
     name: "Mama's Sticky Wings - 5 + Chips",
     price: 59,
   },
