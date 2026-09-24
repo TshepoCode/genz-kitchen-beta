@@ -1,301 +1,475 @@
-// app/api/orders/route.ts
-
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+/* =========================================================
+   TYPES
+========================================================= */
 
-type IncomingOrderItem = {
+type IncomingSaleItem = {
   product_id: string;
   product_name: string;
-  option_label?: string;
-  chips?: string;
-  drink?: string;
   quantity: number;
   price: number;
-  is_reward?: boolean;
-  points_cost?: number;
 };
 
-function createOrderNumber() {
-  const now = new Date();
+type IncomingSaleBody = {
+  paymentMethod: "cash" | "eft" | "website";
+  items: IncomingSaleItem[];
+};
 
-  const datePart = now.toISOString().slice(0, 10).replaceAll("-", "");
+/* =========================================================
+   POST /api/sale
 
-  const randomPart = crypto.randomUUID().slice(0, 6).toUpperCase();
+   MANUAL POS ONLY
 
-  return `GK-${datePart}-${randomPart}`;
-}
+   This route:
+   1. Receives POS products
+   2. Calculates the total
+   3. Creates a row in sales
+   4. Creates rows in sale_items
+   5. Returns the completed sale
+
+   NO customer email
+   NO influencer code
+   NO delivery / collection
+   NO website_orders
+========================================================= */
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    /* =====================================================
+       ENVIRONMENT VARIABLES
+    ===================================================== */
 
-    const {
-      customerEmail,
-      influencerCode,
-      orderType,
-      donation,
-      rewardPoints,
-      items,
-    }: {
-      customerEmail: string;
-      influencerCode?: string | null;
-      orderType: "delivery" | "collection";
-      donation: number;
-      rewardPoints: number;
-      items: IncomingOrderItem[];
-    } = body;
+    const supabaseUrl =
+      process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-    // =====================================================
-    // VALIDATION
-    // =====================================================
+    const serviceRoleKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!customerEmail?.trim()) {
+    if (!supabaseUrl || !serviceRoleKey) {
+      console.error(
+        "POS SALE API: Missing Supabase environment variables."
+      );
+
       return NextResponse.json(
         {
           success: false,
-          error: "Customer email is required.",
+          error:
+            "Missing Supabase environment variables.",
         },
-        { status: 400 }
+        {
+          status: 500,
+        }
       );
     }
 
-    if (orderType !== "delivery" && orderType !== "collection") {
+    /* =====================================================
+       CREATE SERVER SUPABASE CLIENT
+    ===================================================== */
+
+    const supabaseAdmin = createClient(
+      supabaseUrl,
+      serviceRoleKey,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      }
+    );
+
+    /* =====================================================
+       READ REQUEST BODY
+    ===================================================== */
+
+    let body: IncomingSaleBody;
+
+    try {
+      body =
+        (await request.json()) as IncomingSaleBody;
+    } catch {
       return NextResponse.json(
         {
           success: false,
-          error: "Invalid order type.",
+          error: "Invalid request body.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
+
+    const { paymentMethod, items } = body;
+
+    /* =====================================================
+       VALIDATE PAYMENT METHOD
+    ===================================================== */
+
+    const allowedPaymentMethods = [
+      "cash",
+      "eft",
+      "website",
+    ] as const;
+
+    if (
+      !paymentMethod ||
+      !allowedPaymentMethods.includes(
+        paymentMethod
+      )
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid payment method.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    /* =====================================================
+       VALIDATE ITEMS
+    ===================================================== */
 
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         {
           success: false,
-          error: "Your cart is empty.",
+          error:
+            "Please select at least one product.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
-    // =====================================================
-    // NORMALISE ITEMS
-    // =====================================================
+    /* =====================================================
+       NORMALISE + VALIDATE ITEMS
+    ===================================================== */
 
-    const normalisedItems = items.map((item) => ({
-      product_id: String(item.product_id),
+    const cleanItems: IncomingSaleItem[] = [];
 
-      product_name: String(item.product_name),
+    for (const item of items) {
+      const productId =
+        String(item?.product_id ?? "").trim();
 
-      option_label: item.option_label || null,
+      const productName =
+        String(item?.product_name ?? "").trim();
 
-      chips: item.chips || null,
+      const quantity =
+        Number(item?.quantity);
 
-      drink: item.drink || null,
+      const price =
+        Number(item?.price);
 
-      quantity: Math.max(1, Number(item.quantity || 1)),
-
-      price: Math.max(0, Number(item.price || 0)),
-
-      is_reward: Boolean(item.is_reward),
-
-      points_cost: Math.max(0, Number(item.points_cost || 0)),
-    }));
-
-    // =====================================================
-    // CALCULATE ORDER TOTAL
-    // =====================================================
-
-    const itemsTotal = normalisedItems.reduce((total, item) => {
-      if (item.is_reward) {
-        return total;
+      if (!productId) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "One of the products is missing a product ID.",
+          },
+          {
+            status: 400,
+          }
+        );
       }
 
-      return total + item.price * item.quantity;
-    }, 0);
+      if (!productName) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "One of the products is missing a product name.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
 
-    const safeDonation = Math.max(0, Number(donation || 0));
+      if (
+        !Number.isFinite(quantity) ||
+        quantity <= 0 ||
+        !Number.isInteger(quantity)
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Invalid quantity for ${productName}.`,
+          },
+          {
+            status: 400,
+          }
+        );
+      }
 
-    const deliveryFee = orderType === "delivery" ? 30 : 0;
+      if (
+        !Number.isFinite(price) ||
+        price < 0
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Invalid price for ${productName}.`,
+          },
+          {
+            status: 400,
+          }
+        );
+      }
 
-    const total = itemsTotal + safeDonation + deliveryFee;
+      cleanItems.push({
+        product_id: productId,
+        product_name: productName,
+        quantity,
+        price,
+      });
+    }
 
-    const safeRewardPoints = Math.max(0, Number(rewardPoints || 0));
+    /* =====================================================
+       CALCULATE SALE TOTAL
 
-    const orderNumber = createOrderNumber();
+       The server calculates this.
+       We do not trust a total sent from the browser.
+    ===================================================== */
 
-    // =====================================================
-    // CREATE WEBSITE ORDER
-    // =====================================================
+    const total = cleanItems.reduce(
+      (sum, item) => {
+        return (
+          sum +
+          item.price * item.quantity
+        );
+      },
+      0
+    );
 
-    const { data: order, error: orderError } = await supabaseAdmin
-      .from("website_orders")
+    const roundedTotal =
+      Math.round(
+        (total + Number.EPSILON) * 100
+      ) / 100;
+
+    if (
+      !Number.isFinite(roundedTotal) ||
+      roundedTotal <= 0
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Sale total must be greater than R0.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    /* =====================================================
+       CREATE SALES ROW
+    ===================================================== */
+
+    const {
+      data: sale,
+      error: saleError,
+    } = await supabaseAdmin
+      .from("sales")
       .insert({
-        order_number: orderNumber,
-
-        customer_email: customerEmail.trim(),
-
-        influencer_code: influencerCode || null,
-
-        order_type: orderType,
-
-        items_total: itemsTotal,
-
-        donation: safeDonation,
-
-        delivery_fee: deliveryFee,
-
-        total,
-
-        reward_points: safeRewardPoints,
-
-        status: "pending",
-
-        payment_status: "pending",
+        total: roundedTotal,
+        payment_method: paymentMethod,
       })
       .select(
         `
           id,
-          order_number,
-          customer_email,
-          order_type,
-          items_total,
-          donation,
-          delivery_fee,
           total,
-          reward_points,
-          status,
-          payment_status,
+          payment_method,
           created_at
         `
       )
       .single();
 
-    if (orderError || !order) {
-      console.error("CREATE WEBSITE ORDER ERROR:", orderError);
+    if (saleError) {
+      console.error(
+        "POS SALE - sales insert error:",
+        saleError
+      );
 
       return NextResponse.json(
         {
           success: false,
-          error: orderError?.message || "Unable to create order.",
+          error:
+            saleError.message ||
+            "Unable to create sale.",
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
 
-    // =====================================================
-    // CREATE WEBSITE ORDER ITEMS
-    // =====================================================
+    if (!sale) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Sale was not returned after creation.",
+        },
+        {
+          status: 500,
+        }
+      );
+    }
 
-    const orderItems = normalisedItems.map((item) => ({
-      order_id: order.id,
+    /* =====================================================
+       CREATE SALE ITEMS
+    ===================================================== */
 
-      product_id: item.product_id,
+    const saleItems = cleanItems.map(
+      (item) => ({
+        sale_id: sale.id,
 
-      product_name: item.product_name,
+        product_id:
+          item.product_id,
 
-      option_label: item.option_label,
+        product_name:
+          item.product_name,
 
-      chips: item.chips,
+        quantity:
+          item.quantity,
 
-      drink: item.drink,
+        price:
+          item.price,
+      })
+    );
 
-      quantity: item.quantity,
+    const {
+      data: insertedItems,
+      error: saleItemsError,
+    } = await supabaseAdmin
+      .from("sale_items")
+      .insert(saleItems)
+      .select(
+        `
+          id,
+          sale_id,
+          product_id,
+          product_name,
+          quantity,
+          price,
+          created_at
+        `
+      );
 
-      price: item.price,
+    /* =====================================================
+       ROLLBACK IF SALE ITEMS FAIL
+    ===================================================== */
 
-      is_reward: item.is_reward,
+    if (saleItemsError) {
+      console.error(
+        "POS SALE - sale_items insert error:",
+        saleItemsError
+      );
 
-      points_cost: item.points_cost,
-    }));
-
-    const { error: itemsError } = await supabaseAdmin
-      .from("website_order_items")
-      .insert(orderItems);
-
-    // =====================================================
-    // IF ITEMS FAIL, REMOVE THE ORDER
-    // =====================================================
-
-    if (itemsError) {
-      console.error("CREATE WEBSITE ORDER ITEMS ERROR:", itemsError);
-
-      await supabaseAdmin
-        .from("website_orders")
+      const {
+        error: rollbackError,
+      } = await supabaseAdmin
+        .from("sales")
         .delete()
-        .eq("id", order.id);
+        .eq("id", sale.id);
+
+      if (rollbackError) {
+        console.error(
+          "POS SALE - rollback error:",
+          rollbackError
+        );
+      }
 
       return NextResponse.json(
         {
           success: false,
-          error: itemsError.message || "Unable to save order items.",
+          error:
+            saleItemsError.message ||
+            "Unable to save sale items.",
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
 
-    // =====================================================
-    // SUCCESS
-    // =====================================================
+    /* =====================================================
+       SUCCESS
+    ===================================================== */
 
-    console.log("WEBSITE ORDER CREATED:", {
-      orderNumber: order.order_number,
-      customerEmail: order.customer_email,
-      total: order.total,
-    });
+    console.log(
+      "POS SALE CREATED:",
+      {
+        saleId: sale.id,
+        total:
+          Number(sale.total),
+        paymentMethod:
+          sale.payment_method,
+        itemCount:
+          cleanItems.reduce(
+            (sum, item) =>
+              sum + item.quantity,
+            0
+          ),
+      }
+    );
 
     return NextResponse.json(
       {
         success: true,
 
-        message: "Order created successfully.",
+        message:
+          "Sale recorded successfully.",
 
-        order: {
-          id: order.id,
+        total:
+          Number(sale.total),
 
-          orderNumber: order.order_number,
+        sale: {
+          id:
+            sale.id,
 
-          customerEmail: order.customer_email,
+          total:
+            Number(sale.total),
 
-          orderType: order.order_type,
+          paymentMethod:
+            sale.payment_method,
 
-          itemsTotal: Number(order.items_total),
+          createdAt:
+            sale.created_at,
 
-          donation: Number(order.donation),
-
-          deliveryFee: Number(order.delivery_fee),
-
-          total: Number(order.total),
-
-          rewardPoints: Number(order.reward_points),
-
-          status: order.status,
-
-          paymentStatus: order.payment_status,
-
-          createdAt: order.created_at,
+          items:
+            insertedItems ?? [],
         },
       },
-      { status: 201 }
+      {
+        status: 201,
+      }
     );
   } catch (error) {
-    console.error("WEBSITE ORDER API ERROR:", error);
+    console.error(
+      "POS SALE API ERROR:",
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
+
         error:
           error instanceof Error
             ? error.message
-            : "Unable to place order.",
+            : "Unable to record sale.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
