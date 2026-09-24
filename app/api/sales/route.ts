@@ -1,3 +1,5 @@
+// app/api/orders/route.ts
+
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -6,182 +8,292 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-type SaleItem = {
+type IncomingOrderItem = {
   product_id: string;
   product_name: string;
+  option_label?: string;
+  chips?: string;
+  drink?: string;
   quantity: number;
   price: number;
+  is_reward?: boolean;
+  points_cost?: number;
 };
+
+function createOrderNumber() {
+  const now = new Date();
+
+  const datePart = now.toISOString().slice(0, 10).replaceAll("-", "");
+
+  const randomPart = crypto.randomUUID().slice(0, 6).toUpperCase();
+
+  return `GK-${datePart}-${randomPart}`;
+}
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
     const {
+      customerEmail,
+      influencerCode,
+      orderType,
+      donation,
+      rewardPoints,
       items,
-      paymentMethod,
     }: {
-      items: SaleItem[];
-      paymentMethod: string;
+      customerEmail: string;
+      influencerCode?: string | null;
+      orderType: "delivery" | "collection";
+      donation: number;
+      rewardPoints: number;
+      items: IncomingOrderItem[];
     } = body;
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json(
-        { error: "No sale items provided." },
-        { status: 400 }
-      );
-    }
+    // =====================================================
+    // VALIDATION
+    // =====================================================
 
-    if (!paymentMethod) {
-      return NextResponse.json(
-        { error: "Payment method is required." },
-        { status: 400 }
-      );
-    }
-
-    const allowedPaymentMethods = [
-      "cash",
-      "eft",
-      "website",
-    ];
-
-    if (!allowedPaymentMethods.includes(paymentMethod)) {
-      return NextResponse.json(
-        { error: "Invalid payment method." },
-        { status: 400 }
-      );
-    }
-
-    // ============================================
-    // VALIDATE ITEMS
-    // ============================================
-
-    for (const item of items) {
-      if (
-        !item.product_id ||
-        !item.product_name ||
-        !item.quantity ||
-        !item.price
-      ) {
-        return NextResponse.json(
-          { error: "Invalid sale item." },
-          { status: 400 }
-        );
-      }
-
-      if (Number(item.quantity) <= 0) {
-        return NextResponse.json(
-          { error: "Quantity must be greater than 0." },
-          { status: 400 }
-        );
-      }
-
-      if (Number(item.price) < 0) {
-        return NextResponse.json(
-          { error: "Price cannot be negative." },
-          { status: 400 }
-        );
-      }
-    }
-
-    // ============================================
-    // CALCULATE ORDER TOTAL
-    // ============================================
-
-    const total = items.reduce(
-      (sum, item) =>
-        sum +
-        Number(item.price) *
-          Number(item.quantity),
-      0
-    );
-
-    // ============================================
-    // CREATE SALE
-    // ============================================
-
-    const {
-      data: sale,
-      error: saleError,
-    } = await supabaseAdmin
-      .from("sales")
-      .insert({
-        total,
-        payment_method: paymentMethod,
-      })
-      .select("id, total, payment_method, created_at")
-      .single();
-
-    if (saleError || !sale) {
-      console.error("Sale insert error:", saleError);
-
+    if (!customerEmail?.trim()) {
       return NextResponse.json(
         {
-          error:
-            saleError?.message ||
-            "Failed to create sale.",
+          success: false,
+          error: "Customer email is required.",
         },
-        { status: 500 }
+        { status: 400 }
       );
     }
 
-    // ============================================
-    // CREATE SALE ITEMS
-    // ============================================
+    if (orderType !== "delivery" && orderType !== "collection") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid order type.",
+        },
+        { status: 400 }
+      );
+    }
 
-    const saleItems = items.map((item) => ({
-      sale_id: sale.id,
-      product_id: item.product_id,
-      product_name: item.product_name,
-      quantity: Number(item.quantity),
-      price: Number(item.price),
+    if (!Array.isArray(items) || items.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Your cart is empty.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // =====================================================
+    // NORMALISE ITEMS
+    // =====================================================
+
+    const normalisedItems = items.map((item) => ({
+      product_id: String(item.product_id),
+
+      product_name: String(item.product_name),
+
+      option_label: item.option_label || null,
+
+      chips: item.chips || null,
+
+      drink: item.drink || null,
+
+      quantity: Math.max(1, Number(item.quantity || 1)),
+
+      price: Math.max(0, Number(item.price || 0)),
+
+      is_reward: Boolean(item.is_reward),
+
+      points_cost: Math.max(0, Number(item.points_cost || 0)),
     }));
 
-    const { error: saleItemsError } =
-      await supabaseAdmin
-        .from("sale_items")
-        .insert(saleItems);
+    // =====================================================
+    // CALCULATE ORDER TOTAL
+    // =====================================================
 
-    if (saleItemsError) {
-      console.error(
-        "Sale items insert error:",
-        saleItemsError
-      );
+    const itemsTotal = normalisedItems.reduce((total, item) => {
+      if (item.is_reward) {
+        return total;
+      }
 
-      // Remove the parent sale if item creation fails
-      await supabaseAdmin
-        .from("sales")
-        .delete()
-        .eq("id", sale.id);
+      return total + item.price * item.quantity;
+    }, 0);
+
+    const safeDonation = Math.max(0, Number(donation || 0));
+
+    const deliveryFee = orderType === "delivery" ? 30 : 0;
+
+    const total = itemsTotal + safeDonation + deliveryFee;
+
+    const safeRewardPoints = Math.max(0, Number(rewardPoints || 0));
+
+    const orderNumber = createOrderNumber();
+
+    // =====================================================
+    // CREATE WEBSITE ORDER
+    // =====================================================
+
+    const { data: order, error: orderError } = await supabaseAdmin
+      .from("website_orders")
+      .insert({
+        order_number: orderNumber,
+
+        customer_email: customerEmail.trim(),
+
+        influencer_code: influencerCode || null,
+
+        order_type: orderType,
+
+        items_total: itemsTotal,
+
+        donation: safeDonation,
+
+        delivery_fee: deliveryFee,
+
+        total,
+
+        reward_points: safeRewardPoints,
+
+        status: "pending",
+
+        payment_status: "pending",
+      })
+      .select(
+        `
+          id,
+          order_number,
+          customer_email,
+          order_type,
+          items_total,
+          donation,
+          delivery_fee,
+          total,
+          reward_points,
+          status,
+          payment_status,
+          created_at
+        `
+      )
+      .single();
+
+    if (orderError || !order) {
+      console.error("CREATE WEBSITE ORDER ERROR:", orderError);
 
       return NextResponse.json(
         {
-          error:
-            saleItemsError.message ||
-            "Failed to save sale items.",
+          success: false,
+          error: orderError?.message || "Unable to create order.",
         },
         { status: 500 }
       );
     }
 
-    // ============================================
-    // SUCCESS RESPONSE
-    // ============================================
+    // =====================================================
+    // CREATE WEBSITE ORDER ITEMS
+    // =====================================================
 
-    return NextResponse.json({
-      success: true,
-      saleId: sale.id,
-      total: Number(sale.total),
-      paymentMethod: sale.payment_method,
-      createdAt: sale.created_at,
-      items,
+    const orderItems = normalisedItems.map((item) => ({
+      order_id: order.id,
+
+      product_id: item.product_id,
+
+      product_name: item.product_name,
+
+      option_label: item.option_label,
+
+      chips: item.chips,
+
+      drink: item.drink,
+
+      quantity: item.quantity,
+
+      price: item.price,
+
+      is_reward: item.is_reward,
+
+      points_cost: item.points_cost,
+    }));
+
+    const { error: itemsError } = await supabaseAdmin
+      .from("website_order_items")
+      .insert(orderItems);
+
+    // =====================================================
+    // IF ITEMS FAIL, REMOVE THE ORDER
+    // =====================================================
+
+    if (itemsError) {
+      console.error("CREATE WEBSITE ORDER ITEMS ERROR:", itemsError);
+
+      await supabaseAdmin
+        .from("website_orders")
+        .delete()
+        .eq("id", order.id);
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: itemsError.message || "Unable to save order items.",
+        },
+        { status: 500 }
+      );
+    }
+
+    // =====================================================
+    // SUCCESS
+    // =====================================================
+
+    console.log("WEBSITE ORDER CREATED:", {
+      orderNumber: order.order_number,
+      customerEmail: order.customer_email,
+      total: order.total,
     });
-  } catch (error) {
-    console.error("Sales API error:", error);
 
     return NextResponse.json(
       {
-        error: "Something went wrong while saving the sale.",
+        success: true,
+
+        message: "Order created successfully.",
+
+        order: {
+          id: order.id,
+
+          orderNumber: order.order_number,
+
+          customerEmail: order.customer_email,
+
+          orderType: order.order_type,
+
+          itemsTotal: Number(order.items_total),
+
+          donation: Number(order.donation),
+
+          deliveryFee: Number(order.delivery_fee),
+
+          total: Number(order.total),
+
+          rewardPoints: Number(order.reward_points),
+
+          status: order.status,
+
+          paymentStatus: order.payment_status,
+
+          createdAt: order.created_at,
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("WEBSITE ORDER API ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to place order.",
       },
       { status: 500 }
     );

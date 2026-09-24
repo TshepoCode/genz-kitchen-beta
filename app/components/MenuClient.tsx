@@ -300,6 +300,17 @@ const menuItems: Record<CategoryName, MenuItem[]> = {
       ],
     },
     {
+      name: "Chicken Quasedillas ",
+      image: "/chickenQuasedillasKagiso.webp",
+      options: [
+        {
+          label: "Standard",
+          price: "R85",
+          image: "/chickenQuasedillasKagiso.webp",
+        },
+      ],
+    },    
+    {
       name: "Cheesy Jalapeno Fries",
       image: "/CheesyJalapenoFries.webp",
       options: [
@@ -390,6 +401,8 @@ export default function MenuClient() {
   const [orderType, setOrderType] = useState<"delivery" | "collection" | "">(
     ""
   );
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
 
   const { cart, addToCart, removeFromCart, clearCart } = useCart();
 
@@ -551,7 +564,7 @@ export default function MenuClient() {
     return `${selectedCard.name} Options`;
   }, [selectedCard]);
 
-  function handlePlaceOrder() {
+  async function handlePlaceOrder() {
     if (!orderType) return;
 
     if (!customerEmail) {
@@ -559,29 +572,94 @@ export default function MenuClient() {
       return;
     }
 
-    const deliveryFee = orderType === "delivery" ? 30 : 0;
-    const finalTotal = cartTotal + donationAmount + deliveryFee;
+    if (cart.length === 0) {
+      alert("Your cart is empty.");
+      return;
+    }
 
-    const orderMessage = cart
-      .map((item, index) => {
+    if (isPlacingOrder) return;
+
+    try {
+      setIsPlacingOrder(true);
+      setCheckoutError("");
+
+      const orderItems = cart.map((item) => {
         const quantity = item.quantity || 1;
+        const price = item.isReward
+          ? 0
+          : typeof item.price === "number"
+            ? item.price
+            : getPriceNumber(item.basePrice);
 
-        if (item.isReward) {
-          return `${index + 1}. REWARD ITEM: ${item.itemName}
+        return {
+          product_id: item.id,
+          product_name: item.itemName,
+          option_label: item.optionLabel || "",
+          chips: item.chips || "",
+          drink: item.drink || "",
+          quantity,
+          price,
+          is_reward: Boolean(item.isReward),
+          points_cost: item.pointsCost || 0,
+        };
+      });
+
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerEmail,
+          influencerCode: influencerCode || null,
+          orderType,
+          donation: donationAmount,
+          rewardPoints: rewardPointsTotal,
+          items: orderItems,
+        }),
+      });
+
+      const contentType = response.headers.get("content-type");
+
+      if (!contentType?.includes("application/json")) {
+        const text = await response.text();
+        console.error("Order API returned non JSON:", text);
+        throw new Error("The order server returned an invalid response.");
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to place order.");
+      }
+
+      const orderNumber = result.order.orderNumber;
+      const finalTotal = Number(result.order.total);
+      const deliveryFee = orderType === "delivery" ? 30 : 0;
+
+      const orderMessage = cart
+        .map((item, index) => {
+          const quantity = item.quantity || 1;
+
+          if (item.isReward) {
+            return `${index + 1}. REWARD ITEM: ${item.itemName}
+Quantity: ${quantity}
 Customer Email: ${item.customerEmail || customerEmail}
 Points To Subtract: ${item.pointsCost || 0}
 Price: R0`;
-        }
+          }
 
-        return `${index + 1}. ${item.itemName} - ${item.optionLabel}
+          return `${index + 1}. ${item.itemName} - ${item.optionLabel}
 Quantity: ${quantity}
 ${item.chips ? `Chips: ${item.chips}` : ""}
 ${item.drink ? `Drink: ${item.drink}` : ""}
 Price: ${item.basePrice}`;
-      })
-      .join("\n\n");
+        })
+        .join("\n\n");
 
-    const message = `Hi GenZ Kitchen, I would like to place an order:
+      const message = `Hi GenZ Kitchen, I would like to place an order:
+
+ORDER NUMBER: ${orderNumber}
 
 Customer Email: ${customerEmail}
 Influencer Code: ${influencerCode || "None"}
@@ -593,21 +671,34 @@ Donation: R${donationAmount}
 Delivery: R${deliveryFee}
 Reward Points To Subtract After Approval: ${rewardPointsTotal}
 
-Total To Pay: R${finalTotal}`;
+TOTAL TO PAY: R${finalTotal}
 
-    const whatsappUrl = `https://wa.me/27676325434?text=${encodeURIComponent(
-      message
-    )}`;
+Order Status: Awaiting payment confirmation
 
-    window.open(whatsappUrl, "_blank");
+Please use order number ${orderNumber} as the reference.`;
 
-    clearCart();
-    setOrderType("");
-    setDonationAmount(0);
-    setInfluencerCode("");
-    setIsFinalCheckoutOpen(false);
-    setIsDonationOpen(false);
-    setIsCartOpen(false);
+      const whatsappUrl = `https://wa.me/27676325434?text=${encodeURIComponent(
+        message
+      )}`;
+
+      window.open(whatsappUrl, "_blank");
+
+      clearCart();
+      setOrderType("");
+      setDonationAmount(0);
+      setInfluencerCode("");
+      setIsFinalCheckoutOpen(false);
+      setIsDonationOpen(false);
+      setIsCartOpen(false);
+    } catch (error) {
+      console.error("Place order:", error);
+
+      setCheckoutError(
+        error instanceof Error ? error.message : "Unable to place your order."
+      );
+    } finally {
+      setIsPlacingOrder(false);
+    }
   }
 
   return (
@@ -1130,12 +1221,20 @@ Total To Pay: R${finalTotal}`;
               </p>
             </div>
 
+            {checkoutError && (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-3">
+                <p className="text-sm font-semibold text-red-700">
+                  {checkoutError}
+                </p>
+              </div>
+            )}
+
             <button
-              disabled={!orderType}
+              disabled={!orderType || isPlacingOrder}
               onClick={handlePlaceOrder}
-              className="w-full rounded-xl bg-black py-3 font-bold text-white disabled:opacity-50"
+              className="w-full rounded-xl bg-black py-3 font-bold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Place Order
+              {isPlacingOrder ? "Creating Order..." : "Place Order"}
             </button>
 
             <button
