@@ -111,7 +111,7 @@ const navigation = [
   },
   {
     name: "Make a Sale",
-    href: "/admin/sales",
+    href: "/admin/kitchen/sales",
     icon: ShoppingCart,
   },
   {

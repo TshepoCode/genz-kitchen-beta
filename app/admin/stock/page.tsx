@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useMemo,
-  useState,
-} from "react";
-
+import { useMemo, useState } from "react";
 import Link from "next/link";
 
 import {
@@ -20,29 +16,32 @@ import {
   Receipt,
   Search,
   ShoppingCart,
-  TrendingDown,
+  Trash2,
   Warehouse,
   X,
+  Minus,
+  Check,
 } from "lucide-react";
 
-type StockCategory =
-  | "sellable"
-  | "ingredient";
+/* =========================================================
+   TYPES
+========================================================= */
 
 type StockItem = {
   id: string;
   name: string;
-  category: StockCategory;
-
-  opening: number;
-  sold: number;
-
-  adjustment: number;
-
   unit: string;
-
+  holding: number;
   lowStockLevel: number;
 };
+
+type StockInput = {
+  [key: string]: string;
+};
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
 
 const navigation = [
   {
@@ -82,488 +81,192 @@ const navigation = [
   },
 ];
 
+/* =========================================================
+   DEFAULT INGREDIENTS
+
+   All stock starts at 0.
+   Later these will come from Supabase.
+========================================================= */
+
 const initialStock: StockItem[] = [
-  // =====================================
-  // SELLABLE PRODUCTS
-  // =====================================
-
-  {
-    id: "zungu-chips",
-    name: "Give Me Zungu + Chips",
-    category: "sellable",
-
-    opening: 15,
-    sold: 0,
-
-    adjustment: 0,
-
-    unit: "meals",
-
-    lowStockLevel: 4,
-  },
-
-  {
-    id: "chicken-quesadillas",
-    name: "2 Chicken Quesadillas",
-    category: "sellable",
-
-    opening: 10,
-    sold: 0,
-
-    adjustment: 0,
-
-    unit: "sets",
-
-    lowStockLevel: 3,
-  },
-
-  {
-    id: "crunch-box-wrap",
-    name: "Crunch Box Chicken Wrap + Chips",
-    category: "sellable",
-
-    opening: 10,
-    sold: 0,
-
-    adjustment: 0,
-
-    unit: "meals",
-
-    lowStockLevel: 3,
-  },
-
-  {
-    id: "cheesy-hotdog",
-    name: "Cheesy Hotdog",
-    category: "sellable",
-
-    opening: 10,
-    sold: 0,
-
-    adjustment: 0,
-
-    unit: "hotdogs",
-
-    lowStockLevel: 3,
-  },
-
-  {
-    id: "sticky-wings-5",
-    name: "Mama's Sticky Wings - 5 + Chips",
-    category: "sellable",
-
-    opening: 10,
-    sold: 0,
-
-    adjustment: 0,
-
-    unit: "meals",
-
-    lowStockLevel: 3,
-  },
-
-  {
-    id: "sticky-wings-10",
-    name: "Mama's Sticky Wings - 10 + Chips",
-    category: "sellable",
-
-    opening: 6,
-    sold: 0,
-
-    adjustment: 0,
-
-    unit: "meals",
-
-    lowStockLevel: 2,
-  },
-
-  {
-    id: "mini-bacon-dagwood",
-    name: "Mini Bacon Dagwood + Small Chips",
-    category: "sellable",
-
-    opening: 10,
-    sold: 0,
-
-    adjustment: 0,
-
-    unit: "meals",
-
-    lowStockLevel: 3,
-  },
-
-  {
-    id: "cheesy-mince-russian-hotdog",
-    name: "Cheesy Mince & Russian Hotdog",
-    category: "sellable",
-
-    opening: 10,
-    sold: 0,
-
-    adjustment: 0,
-
-    unit: "hotdogs",
-
-    lowStockLevel: 3,
-  },
-
-  // =====================================
-  // INGREDIENTS
-  // =====================================
-
   {
     id: "burger-buns",
     name: "Burger Buns",
-    category: "ingredient",
-
-    opening: 20,
-    sold: 0,
-
-    adjustment: 0,
-
     unit: "units",
-
+    holding: 0,
     lowStockLevel: 5,
   },
-
   {
     id: "beef-patties",
     name: "Beef Patties",
-    category: "ingredient",
-
-    opening: 30,
-    sold: 0,
-
-    adjustment: 0,
-
     unit: "patties",
-
+    holding: 0,
     lowStockLevel: 10,
   },
-
   {
     id: "chicken-portions",
     name: "Chicken Portions",
-    category: "ingredient",
-
-    opening: 25,
-    sold: 0,
-
-    adjustment: 0,
-
     unit: "portions",
-
+    holding: 0,
     lowStockLevel: 8,
   },
-
   {
-    id: "wings",
+    id: "chicken-wings",
     name: "Chicken Wings",
-    category: "ingredient",
-
-    opening: 70,
-    sold: 0,
-
-    adjustment: 0,
-
     unit: "wings",
-
+    holding: 0,
     lowStockLevel: 20,
   },
-
   {
     id: "wraps",
     name: "Wraps / Tortillas",
-    category: "ingredient",
-
-    opening: 20,
-    sold: 0,
-
-    adjustment: 0,
-
     unit: "wraps",
-
+    holding: 0,
     lowStockLevel: 5,
   },
-
   {
     id: "chips-portions",
     name: "Chips Portions",
-    category: "ingredient",
-
-    opening: 40,
-    sold: 0,
-
-    adjustment: 0,
-
     unit: "portions",
-
+    holding: 0,
     lowStockLevel: 10,
   },
-
   {
     id: "hotdog-rolls",
     name: "Hotdog Rolls",
-    category: "ingredient",
-
-    opening: 20,
-    sold: 0,
-
-    adjustment: 0,
-
     unit: "rolls",
-
+    holding: 0,
     lowStockLevel: 5,
   },
-
   {
-    id: "cheese",
+    id: "cheese-portions",
     name: "Cheese Portions",
-    category: "ingredient",
-
-    opening: 30,
-    sold: 0,
-
-    adjustment: 0,
-
     unit: "portions",
-
+    holding: 0,
     lowStockLevel: 8,
   },
-
   {
-    id: "russians",
+    id: "russian-sausages",
     name: "Russian Sausages",
-    category: "ingredient",
-
-    opening: 15,
-    sold: 0,
-
-    adjustment: 0,
-
     unit: "units",
-
+    holding: 0,
     lowStockLevel: 4,
   },
-
   {
-    id: "bacon",
+    id: "bacon-portions",
     name: "Bacon Portions",
-    category: "ingredient",
-
-    opening: 15,
-    sold: 0,
-
-    adjustment: 0,
-
     unit: "portions",
-
+    holding: 0,
     lowStockLevel: 4,
   },
 ];
 
+/* =========================================================
+   PAGE
+========================================================= */
+
 export default function StockPage() {
   const [stock, setStock] =
-    useState<StockItem[]>(
-      initialStock
-    );
+    useState<StockItem[]>(initialStock);
+
+  const [stockInputs, setStockInputs] =
+    useState<StockInput>({});
+
+  const [search, setSearch] =
+    useState("");
 
   const [
     mobileMenuOpen,
     setMobileMenuOpen,
   ] = useState(false);
 
-  const [search, setSearch] =
-    useState("");
-
-  const [activeTab, setActiveTab] =
-    useState<
-      "all" |
-      "sellable" |
-      "ingredient"
-    >("all");
+  const [
+    addIngredientOpen,
+    setAddIngredientOpen,
+  ] = useState(false);
 
   const [
-    adjustingItem,
-    setAdjustingItem,
-  ] = useState<StockItem | null>(
-    null
-  );
-
-  const [
-    adjustmentAmount,
-    setAdjustmentAmount,
+    ingredientName,
+    setIngredientName,
   ] = useState("");
 
   const [
-    adjustmentType,
-    setAdjustmentType,
-  ] = useState<
-    "add" | "subtract"
-  >("add");
+    ingredientUnit,
+    setIngredientUnit,
+  ] = useState("units");
 
-  function remaining(
-    item: StockItem
-  ) {
-    return Math.max(
-      0,
-      Number(
-        item.opening || 0
-      ) -
-        Number(
-          item.sold || 0
-        ) +
-        Number(
-          item.adjustment || 0
-        )
-    );
-  }
+  const [
+    ingredientLowLevel,
+    setIngredientLowLevel,
+  ] = useState("5");
+
+  const [
+    ingredientStartingQuantity,
+    setIngredientStartingQuantity,
+  ] = useState("0");
+
+  const [
+    savedMessage,
+    setSavedMessage,
+  ] = useState("");
+
+  /* =========================================================
+     FILTER
+  ========================================================= */
 
   const filteredStock =
     useMemo(() => {
+      const value =
+        search
+          .trim()
+          .toLowerCase();
+
+      if (!value) {
+        return stock;
+      }
+
       return stock.filter(
-        (item) => {
-          const matchesSearch =
-            item.name
-              .toLowerCase()
-              .includes(
-                search.toLowerCase()
-              );
-
-          const matchesTab =
-            activeTab === "all" ||
-            item.category ===
-              activeTab;
-
-          return (
-            matchesSearch &&
-            matchesTab
-          );
-        }
+        (item) =>
+          item.name
+            .toLowerCase()
+            .includes(value)
       );
-    }, [
-      stock,
-      search,
-      activeTab,
-    ]);
+    }, [stock, search]);
 
-  const sellableStock =
-    filteredStock.filter(
-      (item) =>
-        item.category ===
-        "sellable"
-    );
+  /* =========================================================
+     SUMMARY
+  ========================================================= */
 
-  const ingredientStock =
-    filteredStock.filter(
-      (item) =>
-        item.category ===
-        "ingredient"
-    );
-
-  const lowStockItems =
-    stock.filter(
-      (item) =>
-        remaining(item) <=
-        item.lowStockLevel
-    );
-
-  const totalItems =
+  const totalIngredients =
     stock.length;
 
-  const totalOpening =
+  const totalHolding =
     stock.reduce(
       (sum, item) =>
         sum +
         Number(
-          item.opening || 0
+          item.holding || 0
         ),
       0
     );
 
-  const totalRemaining =
-    stock.reduce(
-      (sum, item) =>
-        sum +
-        remaining(item),
-      0
-    );
+  const outOfStock =
+    stock.filter(
+      (item) =>
+        item.holding <= 0
+    ).length;
 
-  function openAdjustment(
-    item: StockItem
-  ) {
-    setAdjustingItem(
-      item
-    );
+  const lowStock =
+    stock.filter(
+      (item) =>
+        item.holding > 0 &&
+        item.holding <=
+          item.lowStockLevel
+    ).length;
 
-    setAdjustmentAmount(
-      ""
-    );
-
-    setAdjustmentType(
-      "add"
-    );
-  }
-
-  function closeAdjustment() {
-    setAdjustingItem(
-      null
-    );
-
-    setAdjustmentAmount(
-      ""
-    );
-  }
-
-  function confirmAdjustment() {
-    if (
-      !adjustingItem
-    ) {
-      return;
-    }
-
-    const amount =
-      Number(
-        adjustmentAmount
-      );
-
-    if (
-      Number.isNaN(amount) ||
-      amount <= 0
-    ) {
-      return;
-    }
-
-    setStock(
-      (current) =>
-        current.map(
-          (item) => {
-            if (
-              item.id !==
-              adjustingItem.id
-            ) {
-              return item;
-            }
-
-            const change =
-              adjustmentType ===
-              "add"
-                ? amount
-                : -amount;
-
-            return {
-              ...item,
-
-              adjustment:
-                item.adjustment +
-                change,
-            };
-          }
-        )
-    );
-
-    closeAdjustment();
-  }
+  /* =========================================================
+     DATE
+  ========================================================= */
 
   function todayLabel() {
     return new Intl.DateTimeFormat(
@@ -571,34 +274,293 @@ export default function StockPage() {
       {
         timeZone:
           "Africa/Johannesburg",
-
-        weekday:
-          "long",
-
-        day:
-          "numeric",
-
-        month:
-          "long",
-
-        year:
-          "numeric",
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
       }
-    ).format(
-      new Date()
+    ).format(new Date());
+  }
+
+  /* =========================================================
+     INPUT HANDLING
+  ========================================================= */
+
+  function updateStockInput(
+    id: string,
+    value: string
+  ) {
+    if (
+      value !== "" &&
+      Number(value) < 0
+    ) {
+      return;
+    }
+
+    setStockInputs(
+      (current) => ({
+        ...current,
+        [id]: value,
+      })
     );
   }
+
+  function increaseInput(
+    id: string
+  ) {
+    const current =
+      Number(
+        stockInputs[id] || 0
+      );
+
+    setStockInputs(
+      (inputs) => ({
+        ...inputs,
+        [id]: String(
+          current + 1
+        ),
+      })
+    );
+  }
+
+  function decreaseInput(
+    id: string
+  ) {
+    const current =
+      Number(
+        stockInputs[id] || 0
+      );
+
+    setStockInputs(
+      (inputs) => ({
+        ...inputs,
+        [id]: String(
+          Math.max(
+            0,
+            current - 1
+          )
+        ),
+      })
+    );
+  }
+
+  /* =========================================================
+     ADD STOCK
+
+     For now this updates local React state.
+     Next step: replace with Supabase/API call.
+  ========================================================= */
+
+  function saveStock(
+    item: StockItem
+  ) {
+    const quantity =
+      Number(
+        stockInputs[
+          item.id
+        ] || 0
+      );
+
+    if (
+      !Number.isFinite(
+        quantity
+      ) ||
+      quantity <= 0
+    ) {
+      return;
+    }
+
+    setStock(
+      (current) =>
+        current.map(
+          (stockItem) =>
+            stockItem.id ===
+            item.id
+              ? {
+                  ...stockItem,
+                  holding:
+                    stockItem.holding +
+                    quantity,
+                }
+              : stockItem
+        )
+    );
+
+    setStockInputs(
+      (current) => ({
+        ...current,
+        [item.id]: "",
+      })
+    );
+
+    showSavedMessage(
+      `${quantity} ${item.unit} added to ${item.name}.`
+    );
+  }
+
+  /* =========================================================
+     ADD NEW INGREDIENT
+  ========================================================= */
+
+  function addIngredient() {
+    const name =
+      ingredientName.trim();
+
+    const lowLevel =
+      Number(
+        ingredientLowLevel
+      );
+
+    const startingQuantity =
+      Number(
+        ingredientStartingQuantity
+      );
+
+    if (!name) {
+      return;
+    }
+
+    if (
+      !Number.isFinite(
+        lowLevel
+      ) ||
+      lowLevel < 0
+    ) {
+      return;
+    }
+
+    if (
+      !Number.isFinite(
+        startingQuantity
+      ) ||
+      startingQuantity < 0
+    ) {
+      return;
+    }
+
+    const newItem: StockItem =
+      {
+        id: `${Date.now()}-${name
+          .toLowerCase()
+          .replace(
+            /[^a-z0-9]+/g,
+            "-"
+          )}`,
+
+        name,
+
+        unit:
+          ingredientUnit,
+
+        holding:
+          startingQuantity,
+
+        lowStockLevel:
+          lowLevel,
+      };
+
+    setStock(
+      (current) => [
+        ...current,
+        newItem,
+      ]
+    );
+
+    setIngredientName(
+      ""
+    );
+
+    setIngredientUnit(
+      "units"
+    );
+
+    setIngredientLowLevel(
+      "5"
+    );
+
+    setIngredientStartingQuantity(
+      "0"
+    );
+
+    setAddIngredientOpen(
+      false
+    );
+
+    showSavedMessage(
+      `${name} added to stock.`
+    );
+  }
+
+  /* =========================================================
+     DELETE INGREDIENT
+
+     Temporary local behaviour.
+     Later database ingredients should preferably be archived.
+  ========================================================= */
+
+  function deleteIngredient(
+    item: StockItem
+  ) {
+    const confirmed =
+      window.confirm(
+        `Remove ${item.name} from the stock list?`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setStock(
+      (current) =>
+        current.filter(
+          (stockItem) =>
+            stockItem.id !==
+            item.id
+        )
+    );
+
+    showSavedMessage(
+      `${item.name} removed.`
+    );
+  }
+
+  /* =========================================================
+     MESSAGE
+  ========================================================= */
+
+  function showSavedMessage(
+    message: string
+  ) {
+    setSavedMessage(
+      message
+    );
+
+    window.setTimeout(
+      () => {
+        setSavedMessage(
+          ""
+        );
+      },
+      3000
+    );
+  }
+
+  /* =========================================================
+     RENDER
+  ========================================================= */
 
   return (
     <main className="min-h-screen bg-[#eef0f2] text-slate-950">
       <div className="flex min-h-screen">
-        {/* ================================= */}
-        {/* DESKTOP SIDEBAR */}
-        {/* ================================= */}
+
+        {/* =====================================================
+            DESKTOP SIDEBAR
+        ===================================================== */}
 
         <aside className="hidden w-[230px] shrink-0 border-r border-zinc-800 bg-[#151515] lg:flex lg:flex-col">
           <div className="flex h-20 items-center border-b border-zinc-800 px-5">
             <div className="flex items-center gap-3">
+
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-lime-400 text-black">
                 <ChefHat
                   size={22}
@@ -614,6 +576,7 @@ export default function StockPage() {
                   Kitchen Operations
                 </p>
               </div>
+
             </div>
           </div>
 
@@ -654,49 +617,52 @@ export default function StockPage() {
             )}
           </nav>
 
-          {/* LOW STOCK SIDEBAR */}
+          {/* HOLDING STATUS */}
+
           <div className="p-4">
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+
               <p className="text-xs font-black uppercase tracking-wider text-lime-400">
-                Stock Status
+                Holding Stock
               </p>
 
-              <div className="mt-3 flex items-center gap-2">
-                <span
-                  className={`h-2.5 w-2.5 rounded-full ${
-                    lowStockItems.length >
-                    0
-                      ? "bg-yellow-400"
-                      : "bg-lime-400"
-                  }`}
-                />
+              <p className="mt-3 text-2xl font-black text-white">
+                {totalHolding}
+              </p>
 
-                <p className="text-sm font-black text-white">
-                  {lowStockItems.length >
-                  0
-                    ? `${lowStockItems.length} Low Stock`
-                    : "Stock Healthy"}
+              <p className="mt-1 text-xs text-zinc-500">
+                Total units currently recorded
+              </p>
+
+              <div className="mt-4 border-t border-zinc-800 pt-4">
+                <p className="text-xs font-bold text-zinc-400">
+                  {outOfStock} out of stock
+                </p>
+
+                <p className="mt-1 text-xs font-bold text-zinc-400">
+                  {lowStock} low stock
                 </p>
               </div>
 
-              <p className="mt-2 text-xs leading-relaxed text-zinc-500">
-                Monitor stock before products run out.
-              </p>
             </div>
           </div>
         </aside>
 
-        {/* ================================= */}
-        {/* MAIN */}
-        {/* ================================= */}
+        {/* =====================================================
+            MAIN AREA
+        ===================================================== */}
 
         <div className="min-w-0 flex-1">
-          {/* TOP NAV */}
+
+          {/* ===================================================
+              TOP NAV
+          =================================================== */}
 
           <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
-            <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center gap-3">
-                {/* MOBILE MENU */}
+
+            <div className="flex h-15 items-center justify-between px-4 sm:px-3 lg:px-4">
+
+              <div className="flex items-center gap-2">
 
                 <button
                   type="button"
@@ -712,9 +678,8 @@ export default function StockPage() {
                   />
                 </button>
 
-                {/* MOBILE BRAND */}
-
                 <div className="flex items-center gap-2 lg:hidden">
+
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-lime-400 text-black">
                     <ChefHat
                       size={20}
@@ -724,36 +689,41 @@ export default function StockPage() {
                   <p className="font-black">
                     GenZKitchen
                   </p>
+
                 </div>
 
-                {/* DESKTOP TITLE */}
-
                 <div className="hidden lg:block">
+
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
                     GenZ Kitchen
                   </p>
 
                   <p className="font-black">
-                    Stock Control
+                    Stock Management
                   </p>
+
                 </div>
+
               </div>
 
               <Link
                 href="/admin/kitchen"
-                className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-slate-800"
+                className="rounded-xl bg-slate-950 px-4 py-2.5 text-xs font-black text-white transition hover:bg-slate-800"
               >
                 Dashboard
               </Link>
+
             </div>
+
           </header>
 
-          {/* ================================= */}
-          {/* MOBILE MENU */}
-          {/* ================================= */}
+          {/* ===================================================
+              MOBILE MENU
+          =================================================== */}
 
           {mobileMenuOpen && (
             <div className="fixed inset-0 z-50 lg:hidden">
+
               <button
                 type="button"
                 aria-label="Close menu"
@@ -766,8 +736,11 @@ export default function StockPage() {
               />
 
               <div className="relative h-full w-[280px] bg-[#151515] p-4 shadow-2xl">
+
                 <div className="mb-6 flex items-center justify-between">
+
                   <div className="flex items-center gap-3">
+
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-lime-400 text-black">
                       <ChefHat
                         size={21}
@@ -777,6 +750,7 @@ export default function StockPage() {
                     <p className="font-black text-white">
                       GenZKitchen
                     </p>
+
                   </div>
 
                   <button
@@ -792,9 +766,11 @@ export default function StockPage() {
                       size={18}
                     />
                   </button>
+
                 </div>
 
                 <nav className="space-y-1">
+
                   {navigation.map(
                     (item) => {
                       const Icon =
@@ -834,57 +810,111 @@ export default function StockPage() {
                       );
                     }
                   )}
+
                 </nav>
+
               </div>
+
             </div>
           )}
 
-          {/* ================================= */}
-          {/* PAGE CONTENT */}
-          {/* ================================= */}
+          {/* ===================================================
+              CONTENT
+          =================================================== */}
 
-          <div className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8">
-            {/* TITLE */}
+          <div className="mx-auto max-w-[1450px] px-4 py-6 sm:px-6 lg:px-8">
+
+            {/* =================================================
+                TITLE
+            ================================================= */}
 
             <section className="mb-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+
+              <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+
                 <div>
+
                   <div className="mb-2 flex items-center gap-2 text-lime-700">
+
                     <Warehouse
                       size={17}
                     />
 
                     <span className="text-xs font-black uppercase tracking-[0.18em]">
-                      Inventory Control
+                      Inventory
                     </span>
+
                   </div>
 
-                  <h1 className="text-3xl font-black tracking-tight">
+                  <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
                     Stock
                   </h1>
 
-                  <p className="mt-1 text-sm text-slate-500">
-                    View today's stock levels and identify items that need attention.
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-500">
+                    Add ingredients and record stock received into the kitchen.
+                    Saved quantities become your current holding stock.
                   </p>
+
                 </div>
 
-                <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm">
-                  {todayLabel()}
+                <div className="flex flex-col gap-2 sm:flex-row">
+
+                  <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 shadow-sm">
+                    {todayLabel()}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setAddIngredientOpen(
+                        true
+                      )
+                    }
+                    className="flex items-center justify-center gap-2 rounded-xl bg-lime-400 px-5 py-3 text-sm font-black text-black transition hover:bg-lime-300"
+                  >
+                    <Plus
+                      size={18}
+                    />
+
+                    Add Ingredient
+                  </button>
+
                 </div>
+
               </div>
+
             </section>
 
-            {/* ================================= */}
-            {/* SUMMARY */}
-            {/* ================================= */}
+            {/* =================================================
+                SAVED MESSAGE
+            ================================================= */}
+
+            {savedMessage && (
+              <div className="mb-5 flex items-center gap-3 rounded-xl border border-lime-300 bg-lime-50 px-4 py-3 text-sm font-bold text-lime-900">
+
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-lime-400 text-black">
+                  <Check
+                    size={15}
+                  />
+                </div>
+
+                {savedMessage}
+
+              </div>
+            )}
+
+            {/* =================================================
+                SUMMARY
+            ================================================= */}
 
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
               <SummaryCard
-                title="Stock Items"
+                title="Ingredients"
                 value={String(
-                  totalItems
+                  totalIngredients
                 )}
-                subtitle="Items being monitored"
+                subtitle="Ingredients being tracked"
                 icon={
                   <Package
                     size={21}
@@ -893,11 +923,11 @@ export default function StockPage() {
               />
 
               <SummaryCard
-                title="Opening Units"
+                title="Holding Units"
                 value={String(
-                  totalOpening
+                  totalHolding
                 )}
-                subtitle="Stock counted at opening"
+                subtitle="Current recorded stock"
                 icon={
                   <Warehouse
                     size={21}
@@ -906,409 +936,426 @@ export default function StockPage() {
               />
 
               <SummaryCard
-                title="Remaining Units"
+                title="Low Stock"
                 value={String(
-                  totalRemaining
+                  lowStock
                 )}
-                subtitle="Current expected stock"
+                subtitle="Below warning level"
+                warning={
+                  lowStock > 0
+                }
                 icon={
-                  <ShoppingCart
+                  <AlertTriangle
                     size={21}
                   />
                 }
               />
 
               <SummaryCard
-                title="Low Stock"
+                title="Out of Stock"
                 value={String(
-                  lowStockItems.length
+                  outOfStock
                 )}
-                subtitle="Items needing attention"
-                warning={
-                  lowStockItems.length >
-                  0
+                subtitle="Ingredients currently at zero"
+                danger={
+                  outOfStock > 0
                 }
                 icon={
-                  <TrendingDown
+                  <Package
                     size={21}
                   />
                 }
               />
+
             </section>
 
-            {/* ================================= */}
-            {/* LOW STOCK */}
-            {/* ================================= */}
-
-            {lowStockItems.length >
-              0 && (
-              <section className="mt-6 rounded-2xl border border-yellow-300 bg-yellow-50 p-5 shadow-sm">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-yellow-400 text-black">
-                    <AlertTriangle
-                      size={20}
-                    />
-                  </div>
-
-                  <div className="flex-1">
-                    <h2 className="font-black text-slate-950">
-                      Low Stock Alerts
-                    </h2>
-
-                    <p className="mt-1 text-sm text-slate-600">
-                      These items are close to or below their minimum stock level.
-                    </p>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {lowStockItems.map(
-                        (item) => (
-                          <span
-                            key={
-                              item.id
-                            }
-                            className="rounded-lg border border-yellow-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"
-                          >
-                            {
-                              item.name
-                            }{" "}
-                            •{" "}
-                            {remaining(
-                              item
-                            )}{" "}
-                            left
-                          </span>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {/* ================================= */}
-            {/* SEARCH */}
-            {/* ================================= */}
+            {/* =================================================
+                SEARCH
+            ================================================= */}
 
             <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                {/* SEARCH */}
 
-                <div className="relative flex-1">
-                  <Search
-                    size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
+              <div className="relative">
 
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) =>
-                      setSearch(
-                        e.target.value
-                      )
-                    }
-                    placeholder="Search stock..."
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm font-semibold outline-none transition focus:border-lime-400 focus:ring-4 focus:ring-lime-100"
-                  />
-                </div>
+                <Search
+                  size={18}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
 
-                {/* FILTERS */}
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Search ingredients..."
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm font-semibold outline-none transition focus:border-lime-400 focus:ring-4 focus:ring-lime-100"
+                />
 
-                <div className="flex gap-2 overflow-x-auto">
-                  <FilterButton
-                    label="All"
-                    active={
-                      activeTab ===
-                      "all"
-                    }
-                    onClick={() =>
-                      setActiveTab(
-                        "all"
-                      )
-                    }
-                  />
-
-                  <FilterButton
-                    label="Products"
-                    active={
-                      activeTab ===
-                      "sellable"
-                    }
-                    onClick={() =>
-                      setActiveTab(
-                        "sellable"
-                      )
-                    }
-                  />
-
-                  <FilterButton
-                    label="Ingredients"
-                    active={
-                      activeTab ===
-                      "ingredient"
-                    }
-                    onClick={() =>
-                      setActiveTab(
-                        "ingredient"
-                      )
-                    }
-                  />
-                </div>
               </div>
+
             </section>
 
-            {/* ================================= */}
-            {/* SELLABLE STOCK */}
-            {/* ================================= */}
-
-            {sellableStock.length >
-              0 && (
-              <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-                <div className="mb-5 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-black">
-                      Sellable Products
-                    </h2>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      Finished menu items available for customers.
-                    </p>
-                  </div>
-
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-lime-100 text-lime-700">
-                    <ShoppingCart
-                      size={21}
-                    />
-                  </div>
-                </div>
-
-                <StockTable
-                  items={
-                    sellableStock
-                  }
-                  remaining={
-                    remaining
-                  }
-                  onAdjust={
-                    openAdjustment
-                  }
-                />
-              </section>
-            )}
-
-            {/* ================================= */}
-            {/* INGREDIENT STOCK */}
-            {/* ================================= */}
-
-            {ingredientStock.length >
-              0 && (
-              <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-                <div className="mb-5 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-black">
-                      Kitchen Ingredients
-                    </h2>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      Important ingredients and portions used during trading.
-                    </p>
-                  </div>
-
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                    <Package
-                      size={21}
-                    />
-                  </div>
-                </div>
-
-                <StockTable
-                  items={
-                    ingredientStock
-                  }
-                  remaining={
-                    remaining
-                  }
-                  onAdjust={
-                    openAdjustment
-                  }
-                />
-              </section>
-            )}
-
-            {/* ================================= */}
-            {/* STOCK EXPLANATION */}
-            {/* ================================= */}
+            {/* =================================================
+                INGREDIENT LIST
+            ================================================= */}
 
             <section className="mt-6">
-              <div className="rounded-2xl border border-zinc-800 bg-[#181818] p-5 text-white shadow-sm">
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-lime-400">
-                  Stock Calculation
-                </p>
 
-                <h2 className="mt-2 text-xl font-black">
-                  How stock will work
+              <div className="mb-4">
+
+                <h2 className="text-xl font-black">
+                  Holding Stock
                 </h2>
 
-                <div className="mt-4 rounded-xl bg-zinc-900 p-4">
-                  <p className="font-black text-white">
-                    Opening Stock
-                  </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Enter stock received and save it into the current holding quantity.
+                </p>
 
-                  <p className="text-zinc-500">
-                    + Adjustments
-                  </p>
-
-                  <p className="text-zinc-500">
-                    − Sold / Used
-                  </p>
-
-                  <div className="my-3 h-px bg-zinc-800" />
-
-                  <p className="font-black text-lime-400">
-                    = Expected Remaining Stock
-                  </p>
-                </div>
               </div>
+
+              {filteredStock.length ===
+              0 ? (
+
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+
+                  <Package
+                    size={35}
+                    className="mx-auto text-slate-300"
+                  />
+
+                  <h3 className="mt-4 font-black">
+                    No ingredients found
+                  </h3>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Try another search or add a new ingredient.
+                  </p>
+
+                </div>
+
+              ) : (
+
+                <div className="grid gap-4 xl:grid-cols-2">
+
+                  {filteredStock.map(
+                    (item) => (
+
+                      <StockCard
+                        key={
+                          item.id
+                        }
+                        item={
+                          item
+                        }
+                        inputValue={
+                          stockInputs[
+                            item.id
+                          ] || ""
+                        }
+                        onInputChange={
+                          updateStockInput
+                        }
+                        onIncrease={
+                          increaseInput
+                        }
+                        onDecrease={
+                          decreaseInput
+                        }
+                        onSave={
+                          saveStock
+                        }
+                        onDelete={
+                          deleteIngredient
+                        }
+                      />
+
+                    )
+                  )}
+
+                </div>
+
+              )}
+
+            </section>
+
+            {/* =================================================
+                WORKFLOW
+            ================================================= */}
+
+            <section className="mt-8 rounded-2xl border border-zinc-800 bg-[#181818] p-5 text-white shadow-sm sm:p-6">
+
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-lime-400">
+                GenZ Kitchen Stock Flow
+              </p>
+
+              <h2 className="mt-2 text-xl font-black">
+                Holding stock feeds your trading day
+              </h2>
+
+              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-zinc-400">
+                Stock saved here becomes your current holding stock.
+                Start of Day will use these quantities as the proposed
+                opening quantities before trading begins.
+              </p>
+
+              <div className="mt-5 grid gap-3 md:grid-cols-5">
+
+                <WorkflowBox
+                  number="01"
+                  title="Stock"
+                  text="Receive ingredients"
+                  active
+                />
+
+                <WorkflowBox
+                  number="02"
+                  title="Start Day"
+                  text="Confirm opening"
+                />
+
+                <WorkflowBox
+                  number="03"
+                  title="Operations"
+                  text="Sales use recipes"
+                />
+
+                <WorkflowBox
+                  number="04"
+                  title="End Day"
+                  text="Count & reconcile"
+                />
+
+                <WorkflowBox
+                  number="05"
+                  title="History"
+                  text="Save final record"
+                />
+
+              </div>
+
             </section>
 
             <footer className="mt-8 border-t border-slate-300 py-6">
               <p className="text-xs font-semibold text-slate-400">
-                GenZ Kitchen • Stock Control
+                GenZ Kitchen • Stock Management
               </p>
             </footer>
+
           </div>
+
         </div>
       </div>
 
-      {/* ================================= */}
-      {/* ADJUST STOCK MODAL */}
-      {/* ================================= */}
+      {/* =====================================================
+          ADD INGREDIENT MODAL
+      ===================================================== */}
 
-      {adjustingItem && (
+      {addIngredientOpen && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center">
+
           <button
             type="button"
-            aria-label="Close stock adjustment"
-            onClick={
-              closeAdjustment
+            aria-label="Close"
+            onClick={() =>
+              setAddIngredientOpen(
+                false
+              )
             }
             className="absolute inset-0"
           />
 
-          <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+          <div className="relative w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
+
             <div className="flex items-start justify-between gap-4">
+
               <div>
+
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-lime-700">
-                  Stock Adjustment
+                  Inventory
                 </p>
 
-                <h2 className="mt-1 text-xl font-black text-slate-950">
-                  {
-                    adjustingItem.name
-                  }
+                <h2 className="mt-1 text-2xl font-black">
+                  Add Ingredient
                 </h2>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  Current expected stock:{" "}
-                  <span className="font-black text-slate-900">
-                    {remaining(
-                      adjustingItem
-                    )}
-                  </span>
+                  Create a new ingredient that GenZ Kitchen needs to track.
                 </p>
+
               </div>
 
               <button
                 type="button"
-                onClick={
-                  closeAdjustment
+                onClick={() =>
+                  setAddIngredientOpen(
+                    false
+                  )
                 }
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600"
               >
                 <X
-                  size={17}
+                  size={18}
                 />
               </button>
+
             </div>
 
-            {/* TYPE */}
+            {/* NAME */}
 
             <div className="mt-6">
-              <p className="mb-2 text-sm font-black text-slate-900">
-                Adjustment Type
-              </p>
 
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setAdjustmentType(
-                      "add"
-                    )
-                  }
-                  className={`rounded-xl border px-4 py-3 text-sm font-black ${
-                    adjustmentType ===
-                    "add"
-                      ? "border-lime-400 bg-lime-400 text-black"
-                      : "border-slate-200 bg-slate-50 text-slate-600"
-                  }`}
-                >
-                  Add Stock
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setAdjustmentType(
-                      "subtract"
-                    )
-                  }
-                  className={`rounded-xl border px-4 py-3 text-sm font-black ${
-                    adjustmentType ===
-                    "subtract"
-                      ? "border-red-400 bg-red-50 text-red-700"
-                      : "border-slate-200 bg-slate-50 text-slate-600"
-                  }`}
-                >
-                  Remove Stock
-                </button>
-              </div>
-            </div>
-
-            {/* QUANTITY */}
-
-            <div className="mt-5">
-              <label className="text-sm font-black text-slate-900">
-                Quantity
+              <label className="text-sm font-black">
+                Ingredient Name
               </label>
 
               <input
-                type="number"
-                min="1"
-                inputMode="numeric"
+                type="text"
                 value={
-                  adjustmentAmount
+                  ingredientName
                 }
                 onChange={(e) =>
-                  setAdjustmentAmount(
+                  setIngredientName(
                     e.target.value
                   )
                 }
-                placeholder="0"
-                className="mt-2 h-14 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 text-xl font-black outline-none transition focus:border-lime-500 focus:ring-4 focus:ring-lime-100"
+                placeholder="e.g. Cheese Sauce"
+                className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-lime-400 focus:ring-4 focus:ring-lime-100"
               />
+
+            </div>
+
+            {/* UNIT */}
+
+            <div className="mt-4">
+
+              <label className="text-sm font-black">
+                Measurement Unit
+              </label>
+
+              <select
+                value={
+                  ingredientUnit
+                }
+                onChange={(e) =>
+                  setIngredientUnit(
+                    e.target.value
+                  )
+                }
+                className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-lime-400"
+              >
+                <option value="units">
+                  Units
+                </option>
+
+                <option value="portions">
+                  Portions
+                </option>
+
+                <option value="patties">
+                  Patties
+                </option>
+
+                <option value="wings">
+                  Wings
+                </option>
+
+                <option value="rolls">
+                  Rolls
+                </option>
+
+                <option value="wraps">
+                  Wraps
+                </option>
+
+                <option value="packs">
+                  Packs
+                </option>
+
+                <option value="bottles">
+                  Bottles
+                </option>
+
+                <option value="kg">
+                  Kilograms
+                </option>
+
+                <option value="grams">
+                  Grams
+                </option>
+
+                <option value="litres">
+                  Litres
+                </option>
+
+                <option value="ml">
+                  Millilitres
+                </option>
+              </select>
+
+            </div>
+
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+
+              {/* LOW STOCK */}
+
+              <div>
+
+                <label className="text-sm font-black">
+                  Low Stock Warning
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  value={
+                    ingredientLowLevel
+                  }
+                  onChange={(e) =>
+                    setIngredientLowLevel(
+                      e.target.value
+                    )
+                  }
+                  className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 font-bold outline-none focus:border-lime-400"
+                />
+
+              </div>
+
+              {/* STARTING */}
+
+              <div>
+
+                <label className="text-sm font-black">
+                  Starting Quantity
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  value={
+                    ingredientStartingQuantity
+                  }
+                  onChange={(e) =>
+                    setIngredientStartingQuantity(
+                      e.target.value
+                    )
+                  }
+                  className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 font-bold outline-none focus:border-lime-400"
+                />
+
+              </div>
+
             </div>
 
             <button
               type="button"
               onClick={
-                confirmAdjustment
+                addIngredient
               }
               disabled={
-                !adjustmentAmount ||
-                Number(
-                  adjustmentAmount
-                ) <= 0
+                !ingredientName.trim()
               }
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-4 font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
             >
@@ -1316,247 +1363,292 @@ export default function StockPage() {
                 size={18}
               />
 
-              Save Adjustment
+              Add Ingredient
             </button>
+
           </div>
+
         </div>
       )}
+
     </main>
   );
 }
 
-/* ========================================= */
-/* STOCK TABLE */
-/* ========================================= */
+/* =========================================================
+   STOCK CARD
+========================================================= */
 
-function StockTable({
-  items,
-  remaining,
-  onAdjust,
+function StockCard({
+  item,
+  inputValue,
+  onInputChange,
+  onIncrease,
+  onDecrease,
+  onSave,
+  onDelete,
 }: {
-  items: StockItem[];
+  item: StockItem;
+  inputValue: string;
 
-  remaining: (
+  onInputChange: (
+    id: string,
+    value: string
+  ) => void;
+
+  onIncrease: (
+    id: string
+  ) => void;
+
+  onDecrease: (
+    id: string
+  ) => void;
+
+  onSave: (
     item: StockItem
-  ) => number;
+  ) => void;
 
-  onAdjust: (
+  onDelete: (
     item: StockItem
   ) => void;
 }) {
+  const out =
+    item.holding <= 0;
+
+  const low =
+    !out &&
+    item.holding <=
+      item.lowStockLevel;
+
+  const quantity =
+    Number(
+      inputValue || 0
+    );
+
   return (
-    <>
-      {/* DESKTOP */}
+    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-      <div className="hidden overflow-hidden rounded-xl border border-slate-200 md:block">
-        <div className="grid grid-cols-[2fr_100px_100px_120px_100px] bg-slate-100 px-4 py-3 text-xs font-black uppercase tracking-wide text-slate-500">
-          <span>
-            Item
-          </span>
+      {/* TOP */}
 
-          <span className="text-center">
-            Opening
-          </span>
+      <div className="flex items-start justify-between gap-4 p-5">
 
-          <span className="text-center">
-            Sold
-          </span>
+        <div className="flex min-w-0 items-start gap-4">
 
-          <span className="text-center">
-            Remaining
-          </span>
+          <div
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+              out
+                ? "bg-red-50 text-red-600"
+                : low
+                ? "bg-yellow-100 text-yellow-700"
+                : "bg-lime-100 text-lime-700"
+            }`}
+          >
+            <Package
+              size={21}
+            />
+          </div>
 
-          <span />
+          <div className="min-w-0">
+
+            <h3 className="truncate font-black text-slate-950">
+              {item.name}
+            </h3>
+
+            <p className="mt-1 text-xs font-semibold text-slate-400">
+              Low stock warning at{" "}
+              {item.lowStockLevel}{" "}
+              {item.unit}
+            </p>
+
+          </div>
+
         </div>
 
-        {items.map(
-          (item, index) => {
-            const current =
-              remaining(item);
-
-            const low =
-              current <=
-              item.lowStockLevel;
-
-            return (
-              <div
-                key={
-                  item.id
-                }
-                className={`grid grid-cols-[2fr_100px_100px_120px_100px] items-center px-4 py-4 ${
-                  index !==
-                  items.length -
-                    1
-                    ? "border-b border-slate-100"
-                    : ""
-                }`}
-              >
-                <div>
-                  <p className="font-bold text-slate-900">
-                    {
-                      item.name
-                    }
-                  </p>
-
-                  <div className="mt-1 flex items-center gap-2">
-                    <p className="text-xs font-semibold text-slate-400">
-                      {
-                        item.unit
-                      }
-                    </p>
-
-                    {item.adjustment !==
-                      0 && (
-                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-black text-blue-700">
-                        {item.adjustment >
-                        0
-                          ? "+"
-                          : ""}
-                        {
-                          item.adjustment
-                        }{" "}
-                        adjusted
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <p className="text-center font-black">
-                  {
-                    item.opening
-                  }
-                </p>
-
-                <p className="text-center font-black text-slate-500">
-                  {
-                    item.sold
-                  }
-                </p>
-
-                <div className="text-center">
-                  <span
-                    className={`inline-flex min-w-12 justify-center rounded-lg px-3 py-2 font-black ${
-                      low
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-lime-100 text-lime-800"
-                    }`}
-                  >
-                    {
-                      current
-                    }
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    onAdjust(
-                      item
-                    )
-                  }
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 transition hover:border-lime-300 hover:bg-lime-50"
-                >
-                  Adjust
-                </button>
-              </div>
-            );
+        <button
+          type="button"
+          onClick={() =>
+            onDelete(item)
           }
-        )}
+          title="Remove ingredient"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-300 transition hover:bg-red-50 hover:text-red-600"
+        >
+          <Trash2
+            size={17}
+          />
+        </button>
+
       </div>
 
-      {/* MOBILE */}
+      {/* CURRENT HOLDING */}
 
-      <div className="space-y-3 md:hidden">
-        {items.map(
-          (item) => {
-            const current =
-              remaining(item);
+      <div className="border-y border-slate-100 bg-slate-50 px-5 py-4">
 
-            const low =
-              current <=
-              item.lowStockLevel;
+        <div className="flex items-end justify-between gap-3">
 
-            return (
-              <div
-                key={
-                  item.id
-                }
-                className="rounded-xl border border-slate-200 bg-slate-50 p-4"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-black text-slate-900">
-                      {
-                        item.name
-                      }
-                    </p>
+          <div>
 
-                    <p className="mt-1 text-xs text-slate-400">
-                      {
-                        item.unit
-                      }
-                    </p>
-                  </div>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+              Current Holding
+            </p>
 
-                  <span
-                    className={`rounded-lg px-3 py-2 font-black ${
-                      low
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-lime-100 text-lime-800"
-                    }`}
-                  >
-                    {
-                      current
-                    }
-                  </span>
-                </div>
+            <div className="mt-1 flex items-baseline gap-2">
 
-                <div className="mt-4 grid grid-cols-3 gap-2">
-                  <StockMiniStat
-                    label="Opening"
-                    value={
-                      item.opening
-                    }
-                  />
+              <span className="text-3xl font-black tracking-tight">
+                {item.holding}
+              </span>
 
-                  <StockMiniStat
-                    label="Sold"
-                    value={
-                      item.sold
-                    }
-                  />
+              <span className="text-sm font-bold text-slate-400">
+                {item.unit}
+              </span>
 
-                  <StockMiniStat
-                    label="Adjust"
-                    value={
-                      item.adjustment
-                    }
-                  />
-                </div>
+            </div>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    onAdjust(
-                      item
-                    )
-                  }
-                  className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700"
-                >
-                  Adjust Stock
-                </button>
-              </div>
-            );
-          }
-        )}
+          </div>
+
+          <StockStatus
+            out={out}
+            low={low}
+          />
+
+        </div>
+
       </div>
-    </>
+
+      {/* ADD STOCK */}
+
+      <div className="p-5">
+
+        <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+          Add Stock
+        </p>
+
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+
+          <div className="flex h-12 flex-1 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+
+            <button
+              type="button"
+              onClick={() =>
+                onDecrease(
+                  item.id
+                )
+              }
+              className="flex w-12 shrink-0 items-center justify-center border-r border-slate-200 text-slate-500 transition hover:bg-slate-100"
+            >
+              <Minus
+                size={17}
+              />
+            </button>
+
+            <input
+              type="number"
+              min="0"
+              inputMode="decimal"
+              value={
+                inputValue
+              }
+              onChange={(e) =>
+                onInputChange(
+                  item.id,
+                  e.target.value
+                )
+              }
+              placeholder="0"
+              className="min-w-0 flex-1 bg-transparent px-3 text-center font-black outline-none"
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                onIncrease(
+                  item.id
+                )
+              }
+              className="flex w-12 shrink-0 items-center justify-center border-l border-slate-200 text-slate-500 transition hover:bg-slate-100"
+            >
+              <Plus
+                size={17}
+              />
+            </button>
+
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              onSave(item)
+            }
+            disabled={
+              !Number.isFinite(
+                quantity
+              ) ||
+              quantity <= 0
+            }
+            className="h-12 rounded-xl bg-slate-950 px-6 text-sm font-black text-white transition hover:bg-lime-400 hover:text-black disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+          >
+            Save Stock
+          </button>
+
+        </div>
+
+        {quantity > 0 && (
+          <div className="mt-3 rounded-xl bg-lime-50 px-4 py-3 text-xs font-bold text-lime-800">
+
+            {item.holding}{" "}
+            + {quantity}{" "}
+            ={" "}
+            <span className="font-black">
+              {item.holding +
+                quantity}{" "}
+              {item.unit}
+            </span>
+
+          </div>
+        )}
+
+      </div>
+
+    </article>
   );
 }
 
-/* ========================================= */
-/* SUMMARY CARD */
-/* ========================================= */
+/* =========================================================
+   STOCK STATUS
+========================================================= */
+
+function StockStatus({
+  out,
+  low,
+}: {
+  out: boolean;
+  low: boolean;
+}) {
+  if (out) {
+    return (
+      <span className="rounded-full bg-red-100 px-3 py-1.5 text-xs font-black text-red-700">
+        Out of Stock
+      </span>
+    );
+  }
+
+  if (low) {
+    return (
+      <span className="rounded-full bg-yellow-100 px-3 py-1.5 text-xs font-black text-yellow-800">
+        Low Stock
+      </span>
+    );
+  }
+
+  return (
+    <span className="rounded-full bg-lime-100 px-3 py-1.5 text-xs font-black text-lime-800">
+      In Stock
+    </span>
+  );
+}
+
+/* =========================================================
+   SUMMARY CARD
+========================================================= */
 
 function SummaryCard({
   title,
@@ -1564,19 +1656,25 @@ function SummaryCard({
   subtitle,
   icon,
   warning = false,
+  danger = false,
 }: {
   title: string;
   value: string;
   subtitle: string;
   icon: React.ReactNode;
   warning?: boolean;
+  danger?: boolean;
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+
       <div className="mb-5 flex items-start justify-between">
+
         <div
           className={`flex h-11 w-11 items-center justify-center rounded-xl ${
-            warning
+            danger
+              ? "bg-red-50 text-red-600"
+              : warning
               ? "bg-yellow-100 text-yellow-700"
               : "bg-lime-100 text-lime-700"
           }`}
@@ -1585,79 +1683,86 @@ function SummaryCard({
         </div>
 
         <span
-          className={`h-2 w-2 rounded-full ${
-            warning
+          className={`h-2.5 w-2.5 rounded-full ${
+            danger
+              ? "bg-red-500"
+              : warning
               ? "bg-yellow-400"
               : "bg-lime-400"
           }`}
         />
+
       </div>
 
       <p className="text-sm font-bold text-slate-500">
         {title}
       </p>
 
-      <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+      <p className="mt-2 text-3xl font-black tracking-tight">
         {value}
       </p>
 
       <p className="mt-2 text-xs font-semibold text-slate-400">
         {subtitle}
       </p>
+
     </div>
   );
 }
 
-/* ========================================= */
-/* FILTER BUTTON */
-/* ========================================= */
+/* =========================================================
+   WORKFLOW BOX
+========================================================= */
 
-function FilterButton({
-  label,
-  active,
-  onClick,
+function WorkflowBox({
+  number,
+  title,
+  text,
+  active = false,
 }: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
+  number: string;
+  title: string;
+  text: string;
+  active?: boolean;
 }) {
   return (
-    <button
-      type="button"
-      onClick={
-        onClick
-      }
-      className={`whitespace-nowrap rounded-xl px-4 py-3 text-sm font-black transition ${
+    <div
+      className={`rounded-xl border p-4 ${
         active
-          ? "bg-slate-950 text-white"
-          : "border border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100"
+          ? "border-lime-400 bg-lime-400 text-black"
+          : "border-zinc-800 bg-zinc-900"
       }`}
     >
-      {label}
-    </button>
-  );
-}
-
-/* ========================================= */
-/* STOCK MINI STAT */
-/* ========================================= */
-
-function StockMiniStat({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="rounded-xl bg-white p-3 text-center">
-      <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">
-        {label}
+      <p
+        className={`text-[10px] font-black uppercase tracking-[0.15em] ${
+          active
+            ? "text-black/60"
+            : "text-zinc-600"
+        }`}
+      >
+        {number}
       </p>
 
-      <p className="mt-1 font-black text-slate-900">
-        {value}
+      <p
+        className={`mt-2 font-black ${
+          active
+            ? "text-black"
+            : "text-white"
+        }`}
+      >
+        {title}
       </p>
+
+      <p
+        className={`mt-1 text-xs ${
+          active
+            ? "text-black/70"
+            : "text-zinc-500"
+        }`}
+      >
+        {text}
+      </p>
+
     </div>
   );
 }

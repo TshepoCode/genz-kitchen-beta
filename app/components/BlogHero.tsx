@@ -1,170 +1,790 @@
-"use client";
+import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
 
-import NavBar from "./NavBar";
-import ShopStatus from "./ShopStatus";
-import Link from "next/link";
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-const labels = [
-  {
-    title: "🔥 New Drops",
-    href: "/blog/cheesy-jalapeno-fries",
-    badge: "NEW",
-    className: "bg-lime-100 hover:bg-lime-200 text-lime-700",
-    badgeClass: "bg-lime-500 text-black",
-  },
-  {
-    title: "🍔 Burger Updates",
-    href: "/blog/burger-updates",
-    badge: "Read",
-    className: "bg-orange-100 hover:bg-orange-200 text-orange-700",
-    badgeClass: "text-orange-600",
-  },
-  {
-    title: "🚚 Delivery News",
-    href: "/blog/delivery-news",
-    badge: "Read",
-    className: "bg-blue-100 hover:bg-blue-200 text-blue-700",
-    badgeClass: "text-blue-600",
-  },
-  {
-    title: "💚 Community",
-    href: "/blog/community",
-    badge: "Read",
-    className: "bg-pink-100 hover:bg-pink-200 text-pink-700",
-    badgeClass: "text-pink-600",
-  },
-];
+const serviceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-export default function BlogHero() {
-  const handleCartClick = () => {
-    console.log("Cart clicked");
-  };
-
-  return (
-    <section className="relative w-full bg-white px-4 pb-10 md:px-6">
-      <NavBar onCartClick={handleCartClick} />
-      <ShopStatus />
-
-      <div className="absolute right-0 top-0 h-[300px] w-[300px] rounded-full bg-lime-300/20 blur-3xl" />
-
-      <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.3fr_0.7fr]">
-        <div className="mt-5 overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-xl">
-          <div className="relative aspect-[16/9] overflow-hidden">
-            <img
-              src="/CheesyJalapenoFries.webp"
-              alt="GenZ Kitchen"
-              className="h-full w-full object-cover"
-            />
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-            <div className="absolute left-5 top-5 rounded-full bg-lime-400 px-4 py-2 text-xs font-black uppercase tracking-wide text-black">
-              New Drop
-            </div>
-
-            <div className="absolute bottom-6 left-6 right-6">
-              <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-lime-300">
-                GenZ Kitchen News
-              </p>
-
-              <h1 className="max-w-2xl text-4xl font-black leading-tight text-white md:text-6xl">
-                Food.
-                <br />
-                Culture.
-                <br />
-                Good Vibes.
-              </h1>
-
-              <p className="mt-4 max-w-xl text-sm text-zinc-200 md:text-base">
-                Stay updated with new menu drops, influencer updates, rewards
-                news and community stories from GenZ Kitchen.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-wide text-zinc-400">
-                Latest Article
-              </p>
-
-              <p className="mt-1 text-lg font-bold text-black">
-                Cheesy Jalapeño Fries Just Dropped 🔥
-              </p>
-            </div>
-
-            <Link
-              href="/blog/cheesy-jalapeno-fries"
-              className="flex w-full items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-black uppercase tracking-wide text-white transition hover:bg-lime-500 hover:text-black sm:w-auto"
-            >
-              Read Story
-            </Link>
-          </div>
-        </div>
-
-        <div className="mt-2 flex flex-col gap-5">
-          <div className="rounded-[28px] border border-zinc-200 bg-zinc-50 p-6 shadow-sm">
-            <div className="mb-4 flex items-center gap-1">
-              <span className="text-yellow-400">★</span>
-              <span className="text-yellow-400">★</span>
-              <span className="text-yellow-400">★</span>
-              <span className="text-yellow-400">★</span>
-              <span className="text-yellow-400">★</span>
-            </div>
-
-            <h2 className="text-2xl font-black text-black">
-              “Best Burgers in Kagiso!”
-            </h2>
-
-            <p className="mt-4 text-sm leading-relaxed text-zinc-600">
-              The cheesy sauce just makes everything click. The flavor,
-              packaging and vibe feels premium. The burgers take you outside
-              the hood for a second.
-            </p>
-
-            <div className="mt-6 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-lime-400 text-lg font-black text-black">
-                T
-              </div>
-
-              <div>
-                <p className="font-bold text-black">Tshepo M.</p>
-                <p className="text-xs text-zinc-500">Verified Customer</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
-            <div className="mb-5 flex items-center justify-between">
-              <h3 className="text-xl font-black text-black">
-                Reading Labels
-              </h3>
-
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-xs font-black text-white">
-                4
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              {labels.map((label) => (
-                <Link
-                  key={label.href}
-                  href={label.href}
-                  className={`flex items-center justify-between rounded-2xl px-4 py-3 transition ${label.className}`}
-                >
-                  <span className="font-bold">{label.title}</span>
-
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-black ${label.badgeClass}`}
-                  >
-                    {label.badge}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+if (!supabaseUrl) {
+  throw new Error(
+    "NEXT_PUBLIC_SUPABASE_URL is missing."
   );
+}
+
+if (!serviceRoleKey) {
+  throw new Error(
+    "SUPABASE_SERVICE_ROLE_KEY is missing."
+  );
+}
+
+const supabaseAdmin =
+  createClient(
+    supabaseUrl,
+    serviceRoleKey
+  );
+
+/* =========================================================
+   TYPES
+========================================================= */
+
+type IncomingOrderItem = {
+  product_id?: string;
+  productId?: string;
+
+  product_name?: string;
+  productName?: string;
+
+  itemName?: string;
+  name?: string;
+
+  option_label?: string | null;
+  optionLabel?: string | null;
+
+  chips?: string | null;
+  drink?: string | null;
+
+  quantity?: number;
+
+  price?: number;
+
+  is_reward?: boolean;
+  isReward?: boolean;
+
+  points_cost?: number;
+  pointsCost?: number;
+};
+
+/* =========================================================
+   ORDER NUMBER
+========================================================= */
+
+function generateOrderNumber() {
+  const now = new Date();
+
+  const year =
+    now.getFullYear();
+
+  const month = String(
+    now.getMonth() + 1
+  ).padStart(2, "0");
+
+  const day = String(
+    now.getDate()
+  ).padStart(2, "0");
+
+  const random =
+    crypto.randomUUID()
+      .replace(/-/g, "")
+      .slice(0, 6)
+      .toUpperCase();
+
+  return `GK-${year}${month}${day}-${random}`;
+}
+
+/* =========================================================
+   GET WEBSITE ORDERS
+
+   Used by:
+   /admin/kitchen/sale
+========================================================= */
+
+export async function GET() {
+  try {
+    console.log(
+      "GET /api/orders"
+    );
+
+    const {
+      data: orders,
+      error,
+    } = await supabaseAdmin
+      .from("website_orders")
+      .select(`
+        id,
+        order_number,
+        customer_email,
+        influencer_code,
+        order_type,
+        items_total,
+        donation,
+        delivery_fee,
+        total,
+        reward_points,
+        status,
+        payment_status,
+        sale_id,
+        created_at,
+        accepted_at,
+        rejected_at,
+        website_order_items (
+          id,
+          order_id,
+          product_id,
+          product_name,
+          option_label,
+          chips,
+          drink,
+          quantity,
+          price,
+          is_reward,
+          points_cost,
+          created_at
+        )
+      `)
+      .order(
+        "created_at",
+        {
+          ascending: false,
+        }
+      );
+
+    if (error) {
+      console.error(
+        "GET website orders Supabase error:",
+        error
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            error.message,
+          details:
+            error.details,
+          hint:
+            error.hint,
+          code:
+            error.code,
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    console.log(
+      `Loaded ${
+        orders?.length || 0
+      } website orders`
+    );
+
+    return NextResponse.json(
+      {
+        success: true,
+        orders:
+          orders || [],
+      },
+      {
+        status: 200,
+      }
+    );
+  } catch (error) {
+    console.error(
+      "GET /api/orders unexpected error:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        success: false,
+
+        error:
+          error instanceof
+          Error
+            ? error.message
+            : "Unable to load website orders.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
+/* =========================================================
+   POST WEBSITE ORDER
+
+   Used by:
+   Customer menu checkout
+========================================================= */
+
+export async function POST(
+  request: Request
+) {
+  let createdOrderId:
+    | string
+    | null = null;
+
+  try {
+    console.log(
+      "POST /api/orders"
+    );
+
+    const body =
+      await request.json();
+
+    /* =====================================================
+       CUSTOMER
+    ===================================================== */
+
+    const customerEmail =
+      String(
+        body.customerEmail ||
+          body.customer_email ||
+          ""
+      ).trim();
+
+    if (!customerEmail) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Customer email is required.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    /* =====================================================
+       ORDER TYPE
+    ===================================================== */
+
+    const orderType =
+      String(
+        body.orderType ||
+          body.order_type ||
+          ""
+      )
+        .trim()
+        .toLowerCase();
+
+    if (
+      orderType !==
+        "delivery" &&
+      orderType !==
+        "collection"
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Order type must be delivery or collection.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    /* =====================================================
+       ITEMS
+    ===================================================== */
+
+    const incomingItems:
+      IncomingOrderItem[] =
+      Array.isArray(
+        body.items
+      )
+        ? body.items
+        : [];
+
+    if (
+      incomingItems.length ===
+      0
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "The order does not contain any items.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    /* =====================================================
+       NORMALISE ITEMS
+    ===================================================== */
+
+    const normalisedItems =
+      incomingItems.map(
+        (item, index) => {
+          const productId =
+            String(
+              item.product_id ||
+                item.productId ||
+                `website-item-${index + 1}`
+            );
+
+          const productName =
+            String(
+              item.product_name ||
+                item.productName ||
+                item.itemName ||
+                item.name ||
+                "Menu Item"
+            );
+
+          const quantity =
+            Number(
+              item.quantity ||
+                1
+            );
+
+          const price =
+            Number(
+              item.price ||
+                0
+            );
+
+          const isReward =
+            Boolean(
+              item.is_reward ??
+                item.isReward ??
+                false
+            );
+
+          const pointsCost =
+            Number(
+              item.points_cost ??
+                item.pointsCost ??
+                0
+            );
+
+          return {
+            product_id:
+              productId,
+
+            product_name:
+              productName,
+
+            option_label:
+              item.option_label ??
+              item.optionLabel ??
+              null,
+
+            chips:
+              item.chips ||
+              null,
+
+            drink:
+              item.drink ||
+              null,
+
+            quantity,
+
+            price,
+
+            is_reward:
+              isReward,
+
+            points_cost:
+              pointsCost,
+          };
+        }
+      );
+
+    /* =====================================================
+       VALIDATE ITEMS
+    ===================================================== */
+
+    for (
+      const item of
+      normalisedItems
+    ) {
+      if (
+        !Number.isFinite(
+          item.quantity
+        ) ||
+        item.quantity <= 0
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "An order item has an invalid quantity.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      if (
+        !Number.isFinite(
+          item.price
+        ) ||
+        item.price < 0
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "An order item has an invalid price.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+    }
+
+    /* =====================================================
+       TOTALS
+    ===================================================== */
+
+    const itemsTotal =
+      normalisedItems.reduce(
+        (
+          sum,
+          item
+        ) => {
+          if (
+            item.is_reward
+          ) {
+            return sum;
+          }
+
+          return (
+            sum +
+            item.price *
+              item.quantity
+          );
+        },
+        0
+      );
+
+    const donation =
+      Math.max(
+        0,
+        Number(
+          body.donation ??
+            body.donationAmount ??
+            0
+        ) || 0
+      );
+
+    const deliveryFee =
+      orderType ===
+      "delivery"
+        ? 30
+        : 0;
+
+    const total =
+      itemsTotal +
+      donation +
+      deliveryFee;
+
+    const rewardPoints =
+      normalisedItems.reduce(
+        (
+          sum,
+          item
+        ) =>
+          sum +
+          (item.is_reward
+            ? item.points_cost *
+              item.quantity
+            : 0),
+        0
+      );
+
+    /* =====================================================
+       INFLUENCER CODE
+    ===================================================== */
+
+    const rawInfluencerCode =
+      body.influencerCode ??
+      body.influencer_code ??
+      null;
+
+    const influencerCode =
+      rawInfluencerCode
+        ? String(
+            rawInfluencerCode
+          ).trim()
+        : null;
+
+    /* =====================================================
+       CREATE ORDER
+    ===================================================== */
+
+    const orderNumber =
+      generateOrderNumber();
+
+    const {
+      data: order,
+      error: orderError,
+    } = await supabaseAdmin
+      .from(
+        "website_orders"
+      )
+      .insert({
+        order_number:
+          orderNumber,
+
+        customer_email:
+          customerEmail,
+
+        influencer_code:
+          influencerCode,
+
+        order_type:
+          orderType,
+
+        items_total:
+          itemsTotal,
+
+        donation,
+
+        delivery_fee:
+          deliveryFee,
+
+        total,
+
+        reward_points:
+          rewardPoints,
+
+        status:
+          "pending",
+
+        payment_status:
+          "pending",
+      })
+      .select(`
+        id,
+        order_number,
+        customer_email,
+        influencer_code,
+        order_type,
+        items_total,
+        donation,
+        delivery_fee,
+        total,
+        reward_points,
+        status,
+        payment_status,
+        created_at
+      `)
+      .single();
+
+    if (
+      orderError ||
+      !order
+    ) {
+      console.error(
+        "Create website order error:",
+        orderError
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+
+          error:
+            orderError?.message ||
+            "Unable to create website order.",
+
+          details:
+            orderError?.details,
+
+          hint:
+            orderError?.hint,
+
+          code:
+            orderError?.code,
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    createdOrderId =
+      order.id;
+
+    /* =====================================================
+       CREATE ORDER ITEMS
+    ===================================================== */
+
+    const orderItems =
+      normalisedItems.map(
+        (item) => ({
+          order_id:
+            order.id,
+
+          product_id:
+            item.product_id,
+
+          product_name:
+            item.product_name,
+
+          option_label:
+            item.option_label,
+
+          chips:
+            item.chips,
+
+          drink:
+            item.drink,
+
+          quantity:
+            item.quantity,
+
+          price:
+            item.price,
+
+          is_reward:
+            item.is_reward,
+
+          points_cost:
+            item.points_cost,
+        })
+      );
+
+    const {
+      error:
+        orderItemsError,
+    } = await supabaseAdmin
+      .from(
+        "website_order_items"
+      )
+      .insert(
+        orderItems
+      );
+
+    if (
+      orderItemsError
+    ) {
+      console.error(
+        "Create website order items error:",
+        orderItemsError
+      );
+
+      /*
+        Remove the order because
+        its items failed to save.
+      */
+
+      await supabaseAdmin
+        .from(
+          "website_orders"
+        )
+        .delete()
+        .eq(
+          "id",
+          order.id
+        );
+
+      createdOrderId =
+        null;
+
+      return NextResponse.json(
+        {
+          success: false,
+
+          error:
+            orderItemsError.message ||
+            "Unable to save website order items.",
+
+          details:
+            orderItemsError.details,
+
+          hint:
+            orderItemsError.hint,
+
+          code:
+            orderItemsError.code,
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    /* =====================================================
+       SUCCESS
+    ===================================================== */
+
+    return NextResponse.json(
+      {
+        success: true,
+
+        message:
+          "Order created successfully.",
+
+        orderId:
+          order.id,
+
+        orderNumber:
+          order.order_number,
+
+        total:
+          Number(
+            order.total
+          ),
+
+        status:
+          order.status,
+
+        paymentStatus:
+          order.payment_status,
+
+        order: {
+          ...order,
+
+          website_order_items:
+            orderItems,
+        },
+      },
+      {
+        status: 201,
+      }
+    );
+  } catch (error) {
+    console.error(
+      "POST /api/orders unexpected error:",
+      error
+    );
+
+    /*
+      Safety cleanup if something
+      failed after creating the order.
+    */
+
+    if (
+      createdOrderId
+    ) {
+      await supabaseAdmin
+        .from(
+          "website_orders"
+        )
+        .delete()
+        .eq(
+          "id",
+          createdOrderId
+        );
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+
+        error:
+          error instanceof
+          Error
+            ? error.message
+            : "Something went wrong while creating the order.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }

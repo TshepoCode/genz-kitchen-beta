@@ -452,6 +452,14 @@ export default function SalesPage() {
             </p>
           </div>
 
+          <Link
+            href="/admin/kitchen/website-orders"
+            className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-black"
+          >
+            Website Orders 
+          </Link>
+          
+
           <div className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:w-auto sm:px-4">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-black text-lime-400">
               <ShoppingCart
