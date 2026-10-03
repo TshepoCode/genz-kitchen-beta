@@ -677,11 +677,11 @@ Order Status: Awaiting payment confirmation
 
 Please use order number ${orderNumber} as the reference.`;
 
-      const whatsappUrl = `https://wa.me/27676325434?text=${encodeURIComponent(
-        message
-      )}`;
+      const whatsappNumber = "27766123456"; // Replace with your WhatsApp number
 
-      window.open(whatsappUrl, "_blank");
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+
+      window.location.href = whatsappUrl;
 
       clearCart();
       setOrderType("");
@@ -690,6 +690,8 @@ Please use order number ${orderNumber} as the reference.`;
       setIsFinalCheckoutOpen(false);
       setIsDonationOpen(false);
       setIsCartOpen(false);
+
+      window.location.assign(whatsappUrl);
     } catch (error) {
       console.error("Place order:", error);
 
